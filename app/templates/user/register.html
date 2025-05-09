@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Akun - Solusi Jalanan Lebih Aman</title>
+  <link rel="apple-touch-icon" sizes="180x180"
+    href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32"
+    href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16"
+    href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
+  <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicons/favicon.ico') }}">
+  <style>
+    :root {
+      --primary: #71a894;
+      --secondary: #575656;
+      --dark: #333333;
+      --light: #F5F5F5;
+      --text-on-primary: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--light);
+      color: var(--secondary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background-color: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--primary), #5d8f7d);
+      color: var(--text-on-primary);
+      padding: 60px 20px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      max-width: 700px;
+      margin: 0 auto 30px;
+    }
+
+    .form-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      max-width: 500px;
+      margin: 0 auto;
+      margin-top: 5%;
+    }
+
+    .form-title {
+      font-size: 24px;
+      color: var(--primary);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--secondary);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(113, 168, 148, 0.2);
+    }
+
+    .form-group .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-group.error input {
+      border-color: #e74c3c;
+    }
+
+    .form-group.error .error-message {
+      display: block;
+    }
+
+    .password-strength {
+      height: 4px;
+      background-color: #eee;
+      margin-top: 8px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .password-strength-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #e74c3c;
+      transition: width 0.3s, background-color 0.3s;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: var(--text-on-primary);
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #5d8f7d;
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      color: var(--secondary);
+    }
+
+    .login-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 20px;
+      color: var(--secondary);
+      font-size: 14px;
+    }
+
+    /* Loading animation */
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .loading-spinner {
+      border: 3px solid rgba(113, 168, 148, 0.2);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <h2 class="form-title">Daftar Akun Baru</h2>
+      <form id="registerForm" action="{{ url_for('register_process') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="form-group">
+          <label for="name">Nama Lengkap</label>
+          <input name="name" type="text" id="name" placeholder="Masukkan nama lengkap Anda" required>
+          <div class="error-message">Nama lengkap harus diisi</div>
+        </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input name="username" type="text" id="username" placeholder="Masukkan username" required>
+          <div class="error-message">Username</div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input name="password" type="password" id="password" placeholder="Buat password minimal 3 karakter" required>
+          <div class="password-strength">
+            <div class="password-strength-fill" id="passwordStrength"></div>
+          </div>
+          <div class="error-message">Password harus minimal 3 karakter</div>
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Konfirmasi Password</label>
+          <input name="password_confirmation" type="password" id="confirm-password" placeholder="Ulangi password Anda"
+            required>
+          <div class="error-message">Password tidak cocok</div>
+        </div>
+        <button type="submit" class="btn" id="registerBtn">Daftar Sekarang</button>
+        <div class="loading" id="loading">
+          <div class="loading-spinner"></div>
+          <span>Mendaftarkan akun...</span>
+        </div>
+      </form>
+      <div class="login-link">
+        Sudah punya akun? <a href="{{ url_for('login') }}">Masuk di sini</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 YukLapor. Solusi Cerdas untuk Jalanan Lebih Aman.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const registerForm = document.getElementById('registerForm');
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirm-password');
+      const passwordStrength = document.getElementById('passwordStrength');
+      const registerBtn = document.getElementById('registerBtn');
+      const loading = document.getElementById('loading');
+
+      // Password strength indicator
+      passwordInput.addEventListener('input', function () {
+        const password = this.value;
+        let strength = 0;
+
+        if (password.length >= 8) strength += 1;
+        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1;
+        if (password.match(/\d/)) strength += 1;
+        if (password.match(/[^a-zA-Z\d]/)) strength += 1;
+
+        const width = strength * 25;
+        let color = '#e74c3c'; // red
+
+        if (strength >= 3) color = '#f1c40f'; // yellow
+        if (strength >= 4) color = '#2ecc71'; // green
+
+        passwordStrength.style.width = width + '%';
+        passwordStrength.style.backgroundColor = color;
+      });
+
+
+    });
+  </script>
+</body>
+</html>

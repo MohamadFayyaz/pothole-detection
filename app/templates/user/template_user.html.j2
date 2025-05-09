@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>{% block title_section %}{% endblock %}</title>
+  <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <!-- ===============================================-->
+  <!--    Favicons-->
+  <!-- ===============================================-->
+  <link rel="apple-touch-icon" sizes="180x180"
+    href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32"
+    href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16"
+    href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
+  <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicons/favicon.ico') }}">
+  <meta name="theme-color" content="#ffffff">
+
+
+
+  <!-- Fonts and icons -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/plugin/webfont/webfont.min.js') }}"></script>
+  <script>
+    WebFont.load({
+      google: {
+        "families": ["Lato:300,400,700,900"]
+      },
+      custom: {
+        "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands",
+          "simple-line-icons"
+        ],
+        urls: ["{{ url_for('static', filename='atlantis-lite/css/fonts.min.css') }}"]
+      },
+      active: function () {
+        sessionStorage.fonts = true;
+      }
+    });
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/atlantis.min.css') }}">
+  {% block head_section %}
+  {% endblock %}
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="main-header">
+      <!-- Logo Header -->
+      <div class="logo-header" data-background-color="green">
+
+        <a href="{{ url_for('dashboard_user') }}" class="logo text-white">
+          <img class="logo rounded-circle " src="{{ url_for('static', filename='img/logo2.png') }}" alt="YUK LAPOR" />
+          <span>
+            Yuk Lapor
+          </span>
+        </a>
+        <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse"
+          data-target="collapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon">
+            <i class="icon-menu"></i>
+          </span>
+        </button>
+        <button class="topbar-toggler more"><i class="icon-options-vertical"></i></button>
+        <div class="nav-toggle">
+          <button class="btn btn-toggle toggle-sidebar">
+            <i class="icon-menu"></i>
+          </button>
+        </div>
+      </div>
+      <!-- End Logo Header -->
+
+      <!-- Navbar Header -->
+      <nav class="navbar navbar-header navbar-expand-lg" data-background-color="green">
+        <div class="container-fluid">
+          <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
+            <li class="nav-item dropdown hidden-caret">
+              <a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
+                <div class="avatar-sm">
+                  <img src="{{ url_for('static', filename='img/user.png') }}" alt="..."
+                    class="avatar-img rounded-circle">
+                </div>
+              </a>
+              <ul class="dropdown-menu dropdown-user animated fadeIn">
+                <div class="dropdown-user-scroll scrollbar-outer">
+                  <li>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{ url_for('profil') }}">Pengaturan
+                      Akun</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
+                  </li>
+                </div>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!-- End Navbar -->
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar sidebar-style-2">
+      <div class="sidebar-wrapper scrollbar scrollbar-inner">
+        <div class="sidebar-content">
+          <div class="user">
+            <div class="info">
+              <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
+                <span class="user-level">{{session['user']['name']}}</span>
+              </a>
+            </div>
+          </div>
+          <ul class="nav nav-success">
+            {% set current_path = request.path %}
+            <li class="nav-item {% if '/dashboard' in current_path %}active{% endif %}">
+              <a href="{{ url_for('dashboard_user') }}">
+                <i class="fas fa-home"></i>
+                <p>Dashboard</p>
+              </a>
+            </li>
+            <li class="nav-section">
+              <span class="sidebar-mini-icon">
+                <i class="fa fa-ellipsis-h"></i>
+              </span>
+              <h4 class="text-section">Navigasi</h4>
+            </li>
+            <li class="nav-item {% if '/report' in current_path %}active{% endif %}">
+              <a href="{{ url_for('report_user') }}">
+                <i class="fas fa-th-large"></i>
+                <p>Laporan</p>
+              </a>
+            </li>
+            <li class="nav-section">
+              <span class="sidebar-mini-icon">
+                <i class="fa fa-ellipsis-h"></i>
+              </span>
+              <h4 class="text-section">Navigasi Pengguna</h4>
+            </li>
+            <li class="nav-item {% if '/profil' in current_path %}active{% endif %}">
+              <a href="{{ url_for('profil') }}">
+                <i class="fas fa-user"></i>
+                <p>Akun</p>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- End Sidebar -->
+
+    <div class="main-panel">
+      <div class="content">
+        <div class="panel-header bg-success-gradient">
+          <div class="page-inner py-5">
+            <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
+              <div>
+                {% block header_section %}
+
+                {% endblock %}
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="page-inner mt--5">
+          {% block container_section %}
+
+          {% endblock %}
+        </div>
+      </div>
+      <footer class="footer">
+        <div class="container-fluid">
+          <div class="copyright ml-auto">
+            <p>© 2025 YukLapor. Solusi Cerdas untuk Jalanan Lebih Aman.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+  </div>
+  <!--   Core JS Files   -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/core/jquery.3.2.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='atlantis-lite/js/core/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='atlantis-lite/js/core/bootstrap.min.js') }}"></script>
+
+  <script
+    src="{{ url_for('static', filename='atlantis-lite/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js') }}"></script>
+  <!-- jQuery Scrollbar -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}">
+  </script>
+
+  <!-- Bootstrap Notify -->
+  <script
+    src="{{ url_for('static', filename='atlantis-lite/js/plugin/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
+
+  <!-- Datatables -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/plugin/datatables/datatables.min.js') }}"></script>
+
+  <!-- Sweet Alert -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/plugin/sweetalert/sweetalert.min.js') }}"></script>
+
+  <!-- Atlantis JS -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/atlantis.min.js') }}"></script>
+  <script>
+    {% with messages = get_flashed_messages(with_categories = true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    $.notify({
+      icon: 'flaticon-alarm-1',
+      title: '{{ category }}',
+      message: "{{ message|safe }}"
+    }, {
+      type: "{{ category }}",  // success, info, warning, danger
+      allow_dismiss: true,
+      placement: {
+        from: "top",
+        align: "right"
+      },
+      delay: 3000,
+      timer: 1000,
+      animate: {
+        enter: 'animated fadeInDown',
+        exit: 'animated fadeOutUp'
+      },
+      z_index: 1031
+    });
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $('#datatables-default').DataTable();
+    });
+  </script>
+  <script>
+    let geojsonCache = null;
+
+    const csrfTokenTemplate = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    async function initGeoJSON() {
+      try {
+        const cached = localStorage.getItem('geojson-data');
+        if (cached) {
+          geojsonCache = JSON.parse(cached);
+          return;
+        }
+
+        const response = await fetch('/geojson', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfTokenTemplate,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) throw new Error('Respon server tidak OK');
+
+        const data = await response.json();
+        geojsonCache = data;
+        localStorage.setItem('geojson-data', JSON.stringify(data));
+
+      } catch (error) {
+        console.error('[GeoJSON] Gagal memuat data:', error);
+        geojsonCache = null; // fallback
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initGeoJSON(); // tunggu selesai load
+    });
+  </script>
+  {% block script_section %}
+
+  {% endblock %}
+</body>
+
+</html>

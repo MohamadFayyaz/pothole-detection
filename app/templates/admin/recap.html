@@ -1,0 +1,83 @@
+{% extends "admin/template_admin.html.j2" %}
+
+{% block title_section %}
+Rekap Laporan
+{% endblock %}
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Rekap Laporan</h2>
+<h5 class="text-white op-7 mb-2">Halaman Rekap Laporan</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="container mt-5">
+  <!-- Tabs -->
+  <ul class="nav nav-tabs" id="laporanTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="perbulan-tab" data-toggle="tab" href="#perbulan" role="tab"
+        aria-controls="perbulan" aria-selected="true">Perbulan</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="pertanggal-tab" data-toggle="tab" href="#pertanggal" role="tab" aria-controls="pertanggal"
+        aria-selected="false">Pertanggal</a>
+    </li>
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="tab-content border p-3" id="laporanTabContent">
+    <!-- Perbulan Tab -->
+    <div class="tab-pane fade show active" id="perbulan" role="tabpanel" aria-labelledby="perbulan-tab">
+      <form action="{{ url_for('recap_process') }}" method="post" target="_blank">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="mode" value="perbulan" required>
+        <div class="form-group">
+          <label for="bulan">Pilih Bulan</label>
+          <select class="form-control" id="bulan" name="bulan">
+            <option value="1">Januari</option>
+            <option value="2">Februari</option>
+            <option value="3">Maret</option>
+            <option value="4">April</option>
+            <option value="5">Mei</option>
+            <option value="6">Juni</option>
+            <option value="7">Juli</option>
+            <option value="8">Agustus</option>
+            <option value="9">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="tahun">Pilih Tahun</label>
+          <select class="form-control" id="tahun" name="tahun" required>
+            {% for y in years %}
+            <option value="{{ y.value }}">{{ y.value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Cetak</button>
+      </form>
+    </div>
+
+    <!-- Pertanggal Tab -->
+    <div class="tab-pane fade" id="pertanggal" role="tabpanel" aria-labelledby="pertanggal-tab">
+      <form action="{{ url_for('recap_process') }}" method="post" target="_blank">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="mode" value="pertanggal">
+        <div class="form-group">
+          <label for="tanggal_mulai">Tanggal Mulai</label>
+          <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" required>
+        </div>
+        <div class="form-group">
+          <label for="tanggal_akhir">Tanggal Akhir</label>
+          <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Cetak</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script_section %}
+{% endblock %}

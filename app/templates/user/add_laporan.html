@@ -1,0 +1,405 @@
+{% extends "user/template_user.html.j2" %}
+
+{% block title_section %}
+Tambah Laporan
+{% endblock %}
+
+{% block head_section %}
+<style>
+  .fullscreen-camera-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .fullscreen-camera-container.active {
+    display: flex;
+  }
+
+  .fullscreen-camera-container video {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    background-color: white;
+    border: none;
+    border-radius: 6px;
+    z-index: 10001;
+  }
+
+  #resultPicture {
+    max-width: 100%;
+    margin-top: 10px;
+    border-radius: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Laporan</h2>
+<h5 class="text-white op-7 mb-2">Halaman Tambah Laporan</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="row mt--2">
+  <div class="col-md-12">
+    <div class="card full-height">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          Data Laporan
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="form-loader" style="text-align: center; margin-top: 10px;">
+          <img src="{{ url_for('static', filename='img/loader.gif') }}" alt="Loading..." style="width: 50px;"> Sedang
+          Memeriksa Kamera & Lokasi Kamu
+        </div>
+        <div id="form" style="display:none;">
+          <form id="new-form-form" action="{{ url_for('add_report_process') }}" method="post"
+            enctype="multipart/form-data" class="container mt-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Location -->
+            <input type="hidden" step="any" id="latitude" name="latitude" value="-6.175389" class="form-control"
+              placeholder="Latitude">
+            <input type="hidden" step="any" id="longitude" name="longtitude" value="106.827139" class="form-control"
+              placeholder="Longitude">
+            <input type="hidden" name="captureImage" id="captureImage">
+            <input type="hidden" name="address" id="address">
+            <input type="hidden" name="kecamatan" id="kecamatan">
+
+            <!-- Dokumentasi -->
+            <div class="form-group">
+              <label for="documentations-input">Dokumentasi</label>
+              <small id="documentations-more-info" class="form-text text-muted">
+                Anda dapat menyertakan foto sebagai dokumentasi.
+              </small>
+
+              <div class="mb-2">
+                <button id="open-documentations-camera-button" class="btn btn-outline-secondary btn-sm"
+                  type="button">Buka
+                  Kamera</button>
+              </div>
+
+              <!-- Kamera dan canvas -->
+              <div id="camera-container" class="fullscreen-camera-container">
+                <button class="back-btn" type="button" onclick="closeCamera()">← Kembali</button>
+                <video id="camera-video" autoplay playsinline></video>
+                <canvas id="camera-canvas" class="d-none"></canvas>
+                <button id="camera-take-button" class="btn btn-light" type="button">Ambil Gambar</button>
+              </div>
+              <img src="" id="resultPicture" style="max-width: 150px; margin: 10px;">
+            </div>
+
+            <!-- Tombol -->
+            <div class="form-group text-right">
+              <button id="btn-submit" class="btn btn-primary" style="display: none;" type="submit">Buat Laporan</button>
+              <a class="btn btn-outline-secondary" href="#/">Batal</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script_section %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<script>
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const latitudeInput = document.getElementById('latitude');
+  const longitudeInput = document.getElementById('longitude');
+  const addressInput = document.getElementById('address');
+  const kecamatanInput = document.getElementById('kecamatan');
+  const btnSubmit = document.getElementById('btn-submit');
+  const openCameraBtn = document.getElementById('open-documentations-camera-button');
+  const formLoader = document.getElementById('form-loader');
+  const form = document.getElementById('form');
+  //btnSubmit.style.display = 'none';
+
+  let geoGranted = false;
+  let cameraGranted = false;
+  let found = false;
+
+
+  async function requestPermissions() {
+    try {
+      form.style.display = 'none';
+      formLoader.style.display = 'block';
+
+
+      const geoPromise = new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          maximumAge: 0
+        });
+      });
+
+      const cameraPromise = navigator.mediaDevices.getUserMedia({ video: true });
+
+      const [position, stream] = await Promise.all([geoPromise, cameraPromise]);
+      console.log(stream);
+      geoGranted = true;
+      cameraGranted = true;
+
+      const userLatLng = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+
+      const kecamatan = await checkKecamatanFromGeoJSON(userLatLng);
+
+      updateButtonVisibility();
+    } catch (error) {
+      alert(`Gagal mendapatkan izin: ${error}`)
+      console.error('Gagal mendapatkan izin:', error);
+    } finally {
+      form.style.display = 'block'; // tampilkan form
+      formLoader.style.display = 'none'; // sembunyikan loader
+    }
+  }
+
+  requestPermissions();
+
+  // Fungsi untuk memuat GeoJSON dan mengecek kecamatan berdasarkan koordinat
+  async function checkKecamatanFromGeoJSON(userLatLng) {
+    if (!geojsonCache) {
+      await initGeoJSON();
+    }
+
+    const userPoint = turf.point([userLatLng.lng, userLatLng.lat]);
+    let foundName = null;
+
+    for (const feature of geojsonCache.features) {
+      const geometry = feature.geometry;
+
+      if (geometry.type === 'Polygon') {
+        const validRings = geometry.coordinates.map(ring => {
+          if (ring.length < 4) {
+            console.warn('LinearRing tidak valid, mengabaikan ring.');
+            return null;
+          }
+          // Tutup ring jika belum tertutup
+          if (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1]) {
+            ring.push(ring[0]);
+          }
+          return ring;
+        }).filter(Boolean);
+
+        if (validRings.length === 0) continue;
+
+        const polygon = turf.polygon(validRings);
+
+        if (turf.booleanPointInPolygon(userPoint, polygon)) {
+          found = true;
+          foundName = feature.properties.WADMKC || "Tidak diketahui";
+          kecamatanInput.value = foundName
+          alert("Posisi pengguna berada di kecamatan: " + foundName);
+          break;
+        }
+
+      } else if (geometry.type === 'MultiPolygon') {
+        const validPolygons = geometry.coordinates.map(polygon => {
+          const validRings = polygon.map(ring => {
+            if (ring.length < 4) {
+              console.warn('LinearRing tidak valid dalam MultiPolygon, mengabaikan ring.');
+              return null;
+            }
+            if (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1]) {
+              ring.push(ring[0]);
+            }
+            return ring;
+          }).filter(Boolean);
+
+          return validRings.length > 0 ? validRings : null;
+        }).filter(Boolean);
+
+        if (validPolygons.length === 0) continue;
+
+        const multiPolygon = turf.multiPolygon(validPolygons);
+
+        if (turf.booleanPointInPolygon(userPoint, multiPolygon)) {
+          found = true;
+          foundName = feature.properties.WADMKC || "Tidak diketahui";
+          kecamatanInput.value = foundName
+          alert("Posisi pengguna berada di kecamatan: " + foundName);
+          break;
+        }
+      }
+    }
+
+    if (!found) {
+      alert("Pengguna harus di dalam wilayah Indramayu untuk melapor.");
+      btnSubmit.style.display = 'none';
+      return null;
+    }
+
+    return foundName;
+  }
+
+
+  async function getAddressFromCoordinates(lat, lon) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&language=id`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'YukLapor/1.0 (yuklapor@gmail.com)' // sesuai anjuran OSM
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Formatkan alamat sesuai dengan Indonesia
+      const address = data.display_name;
+
+      return address;
+    } catch (error) {
+      console.error('Gagal mengambil alamat:', error);
+      return `${lat}, ${lon}`; // Kembalikan latitude dan longitude jika gagal
+    }
+  }
+
+
+  function updateButtonVisibility() {
+    if (geoGranted && cameraGranted && found) {
+      if ('geolocation' in navigator) {
+        btnSubmit.style.display = 'inline-block';
+        // Ambil ulang lokasi saat kedua izin aktif
+        navigator.geolocation.getCurrentPosition(async function (position) {
+          latitudeInput.value = position.coords.latitude;
+          longitudeInput.value = position.coords.longitude;
+
+          const userLatLng = { lat: position.coords.latitude, lng: position.coords.longitude };
+          //const kabupaten = await checkKabupatenFromGeoJSON(userLatLng); // fungsi kamu sendiri
+
+          const address = await getAddressFromCoordinates(position.coords.latitude, position.coords.longitude);
+          addressInput.value = address;
+        });
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    } else {
+      btnSubmit.style.display = 'none';
+      latitudeInput.value = '';
+      longitudeInput.value = '';
+      addressInput.value = '';
+    }
+  }
+
+  async function checkGeolocationPermission() {
+    try {
+      const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
+
+      geoGranted = geoStatus.state === 'granted';
+      updateButtonVisibility();
+      geoStatus.onchange = () => {
+        geoGranted = geoStatus.state === 'granted';
+        updateButtonVisibility();
+      };
+    } catch (e) {
+      console.warn("Gagal cek izin lokasi:", e);
+      geoGranted = false;
+      updateButtonVisibility();
+    }
+  }
+
+  async function checkCameraPermission() {
+    try {
+      const camStatus = await navigator.permissions.query({ name: 'camera' });
+
+      cameraGranted = camStatus.state === 'granted';
+      updateButtonVisibility();
+      camStatus.onchange = () => {
+        cameraGranted = camStatus.state === 'granted';
+        updateButtonVisibility();
+      };
+    } catch (e) {
+      console.warn("Gagal cek izin kamera:", e);
+      cameraGranted = false;
+      updateButtonVisibility();
+    }
+  }
+
+  // Jalankan cek izin saat halaman dimuat
+  checkGeolocationPermission();
+  checkCameraPermission();
+
+
+</script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script>
+  const videoElement = document.getElementById('camera-video');
+  const canvasElement = document.getElementById('camera-canvas');
+  const takePictureBtn = document.getElementById('camera-take-button');
+  const cameraContainer = document.getElementById('camera-container');
+  const captureImage = document.getElementById('captureImage');
+  const resultPicture = document.getElementById('resultPicture');
+
+  const camera = new Camera({
+    video: videoElement,
+    canvas: canvasElement
+  });
+
+  let cameraActive = false;
+
+  openCameraBtn.addEventListener('click', async () => {
+    if (camera.isProbablyLaptop()) {
+      alert("Anda menggunakan laptop. Gunakan kamera dari HP untuk hasil lebih baik.");
+      return;
+    }
+    await camera.launch();
+    cameraContainer.classList.add('active');
+    cameraActive = true;
+  });
+
+  function closeCamera() {
+    camera.stop();
+    cameraContainer.classList.remove('active');
+    cameraActive = false;
+  }
+
+  takePictureBtn.addEventListener('click', async () => {
+    const isPreviousImageAvailable = resultPicture.src && !resultPicture.src.includes('add-report');
+
+    if (isPreviousImageAvailable) {
+      const userConfirmed = confirm('Gambar sebelumnya akan diganti. Lanjutkan?');
+      if (!userConfirmed) return;
+    }
+    updateButtonVisibility();
+    const blob = await camera.takePicture();
+    if (!blob) return;
+
+    const reader = new FileReader();
+    reader.onloadend = function () {
+      const base64data = reader.result;
+      captureImage.value = base64data; // ✅ simpan base64 ke input
+      resultPicture.src = base64data;  // tampilkan preview
+      closeCamera();
+    };
+    reader.readAsDataURL(blob);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,477 @@
+{% extends "admin/template_admin.html.j2" %}
+
+{% block title_section %}
+Dashbord Admin
+{% endblock %}
+
+{% block head_section %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- CSS Leaflet.markercluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<style>
+  #map {
+    height: 100%;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+
+  #map-loader {
+    font-size: 14px;
+    color: #555;
+  }
+
+  .chart-container,
+  .line-container {
+    height: 300px;
+    width: 100%;
+  }
+
+  canvas {
+    height: 100% !important;
+    width: 100% !important;
+  }
+</style>
+{% endblock %}
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Dashboard</h2>
+<h5 class="text-white op-7 mb-2">Halaman Dashboard</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="row">
+  <div class="col-sm-6 col-md-4">
+    <div class="card card-stats card-info card-round">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-5">
+            <div class="icon-big text-center">
+              <i class="icon-docs"></i>
+            </div>
+          </div>
+          <div class="col-7 col-stats">
+            <div class="numbers">
+              <p class="card-category">Laporan Selesai Bulan Ini</p>
+              <h4 class="card-title">{{ report_status['selesai'] }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-4">
+    <div class="card card-stats card-warning card-round">
+      <div class="card-body ">
+        <div class="row">
+          <div class="col-5">
+            <div class="icon-big text-center">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+          <div class="col-7 col-stats">
+            <div class="numbers">
+              <p class="card-category">Laporan Diterima Bulan Ini</p>
+              <h4 class="card-title">{{ report_status['proses'] }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-4">
+    <div class="card card-stats card-secondary card-round">
+      <div class="card-body ">
+        <div class="row">
+          <div class="col-5">
+            <div class="icon-big text-center">
+              <i class="fas fa-window-close"></i>
+            </div>
+          </div>
+          <div class="col-7 col-stats">
+            <div class="numbers">
+              <p class="card-category">Laporan Ditolak Bulan Ini</p>
+              <h4 class="card-title">{{ report_status['ditolak'] }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row mt--2">
+  <div class="col-md-4">
+    <div class="card full-height">
+      <div class="card-body">
+        <div class="chart-container">
+          <div id="chartKecamatan-loader" style="text-align: center; margin-top: 10px;">
+            <img src="{{ url_for('static', filename='img/loader.gif') }}" alt="Loading..." style="width: 50px;">
+          </div>
+          <canvas id="chartKecamatan" style="display:none;"></canvas>
+        </div>
+        <hr>
+        <div class="line-container">
+          <div id="yearlyReportsChart-loader" style="text-align: center; margin-top: 10px;">
+            <img src="{{ url_for('static', filename='img/loader.gif') }}" alt="Loading..." style="width: 50px;">
+          </div>
+          <canvas id="yearlyReportsChart" style="display:none;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card full-height">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          Data Lokasi Laporan
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="map-loader" style="text-align: center; margin-top: 10px;">
+          <img src="{{ url_for('static', filename='img/loader.gif') }}" alt="Loading..." style="width: 50px;">
+        </div>
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script_section %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+    }, function (error) {
+      alert("Geolocation permission denied or blocked. Please enable geolocation.");
+    });
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+</script>
+
+<script type="module">
+  import { CustomMap } from "{{ url_for('static', filename='js/map.js') }}";
+
+  const latitudeInput = document.getElementById('latitude');
+  const longitudeInput = document.getElementById('longitude');
+  const loader = document.getElementById('map-loader');
+  const mapContainer = document.getElementById('map');
+
+  // Ambil Data dari flask
+  let reports = JSON.parse('{{ reports_json|safe }}');
+
+  // Buat grup cluster
+  let markers = L.markerClusterGroup();
+
+  let marker;
+  let map;
+  let geojsonLayer;
+
+  // Tampilkan loader, sembunyikan peta
+  try {
+    loader.style.display = 'block';
+    mapContainer.style.visibility = 'hidden';
+    map = await CustomMap.build('#map', { locate: true, zoom: 19, scrollWheelZoom: true, });
+
+    // Load file GeoJSON lokal
+    fetch('/admin/geojson', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken, // kirim token ke server
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("Unauthorized");
+        return response.json();
+      })
+      .then(data => {
+        geojsonLayer = L.geoJSON(data, {
+          onEachFeature: function (feature, layer) {
+            var namaKabupaten = feature.properties.WADMKC || "Nama Kabupaten Tidak Tersedia";
+            layer.bindPopup('<b>' + namaKabupaten + '</b>');
+          },
+          style: {
+            color: 'blue',
+            fillColor: 'skyblue',
+            fillOpacity: 0.2
+          }
+        }).addTo(map.leafletMap);
+
+        map.leafletMap.fitBounds(geojsonLayer.getBounds());
+      })
+      .catch(err => {
+        console.log(err);
+        alert("Gagal memuat GeoJSON: " + err.message);
+      });
+    document.addEventListener('DOMContentLoaded', function () {
+      // Mendeklarasikan csrfToken dan URL base
+      const csrfToken = "{{ csrf_token() }}"; // Menyisipkan CSRF token dari Flask
+    });
+    const updateUrlBase = "{{ url_for('update_report_dashboard_status', report_id=0).replace('0', '') }}"; // Base URL untuk update status
+    const deleteUrlBase = "{{ url_for('report_dashboard_delete', report_id=0).replace('0', '') }}"; // Base URL untuk delete
+    const imageBaseUrl = "{{ url_for('static', filename='img/report_pictures/') }}"; // Base URL untuk gambar
+
+    // Menampilkan marker untuk setiap laporan
+    reports.forEach(report => {
+      let marker = L.marker([report.latitude, report.longtitude]);
+      // Membuat URL dinamis untuk masing-masing laporan berdasarkan pothole_report_id
+      let updateUrl = `${updateUrlBase}${report.pothole_report_id}`;
+      let deleteUrl = `${deleteUrlBase}${report.pothole_report_id}`;
+      let imageUrl = `${imageBaseUrl}${report.image}`;
+
+      // Menyusun popup untuk setiap marker
+      marker.bindPopup(`
+        <b>${report.address}</b><br/>
+        <img src="${imageUrl}" 
+            data-image="${imageUrl}"
+            class="preview-image"
+            alt="gambar laporan"
+            style="width: 100px; cursor: pointer;"/>
+        <div class="btn-group ml-3" role="group">
+          <!-- Form untuk mengubah status laporan menjadi selesai -->
+          <form method="post" action="${updateUrl}">
+            <input type="hidden" name="csrf_token" value="${csrfToken}" />
+            <input type="hidden" name="status" value="selesai">
+            <button type="submit" class="btn btn-sm btn-success" title="Selesaikan">
+              <i class="fas fa-check"></i>
+            </button>
+          </form>
+
+          <!-- Form untuk mengubah status laporan menjadi ditolak -->
+          <form method="post" action="${updateUrl}">
+            <input type="hidden" name="csrf_token" value="${csrfToken}" />
+            <input type="hidden" name="status" value="ditolak">
+            <button type="submit" class="btn btn-sm btn-warning" title="Tolak">
+              <i class="fas fa-times"></i>
+            </button>
+          </form>
+
+          <!-- Form untuk menghapus laporan -->
+          <form method="post" action="${deleteUrl}">
+            <input type="hidden" name="csrf_token" value="${csrfToken}" />
+            <button type="submit" onclick="return confirm('Apakah anda yakin?')" class="btn btn-sm btn-danger" title="Hapus">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+      `);
+
+      // Menambahkan marker ke map
+      markers.addLayer(marker);
+    });
+
+    // Tambahkan ke peta
+    map.leafletMap.addLayer(markers);
+
+    // Get all images with the class 'preview-image'
+    const images = document.querySelectorAll('.preview-image');
+
+    // Create the overlay element
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    overlay.style.display = 'none';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '9999';
+
+    // Create image container inside the overlay
+    const overlayImage = document.createElement('img');
+    overlayImage.style.maxWidth = '90%';
+    overlayImage.style.maxHeight = '90%';
+    overlayImage.style.margin = 'auto';
+    overlayImage.style.borderRadius = '8px';
+    overlay.appendChild(overlayImage);
+
+    // Append overlay to the body
+    document.body.appendChild(overlay);
+
+    // Function to show the overlay with the image
+    images.forEach(function (img) {
+      img.addEventListener('click', function () {
+        const imageUrl = img.getAttribute('data-image');
+        overlayImage.src = imageUrl; // Set the clicked image's URL
+        overlay.style.display = 'flex'; // Show overlay
+      });
+    });
+
+    // Hide the overlay when clicked
+    overlay.addEventListener('click', function () {
+      overlay.style.display = 'none';
+    });
+    document.addEventListener('click', function (e) {
+      if (e.target && e.target.classList.contains('preview-image')) {
+        const imageUrl = e.target.getAttribute('data-image');
+        overlayImage.src = imageUrl;
+        overlay.style.display = 'flex';
+      }
+    });
+    console.log('mulai');
+  } catch (error) {
+    // Code to handle the error
+    console.error(error.message);
+    alert('error', error.message);
+  } finally {
+    console.log('selesai');
+    // Sembunyikan loader, tampilkan peta
+    loader.style.display = 'none';
+    mapContainer.style.visibility = 'visible';
+  }
+
+</script>
+
+<script>
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const chartKecamatanLoader = document.getElementById('chartKecamatan-loader');
+  const chartKecamatanCanvas = document.getElementById('chartKecamatan');
+
+  const yearlyReportsLoader = document.getElementById('yearlyReportsChart-loader');
+  const yearlyReportsCanvas = document.getElementById('yearlyReportsChart');
+
+  fetch('/admin/chart', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken, // kirim token ke server
+    },
+  })
+    .then(res => res.json())
+    .then(data => {
+      chartKecamatanLoader.style.display = 'none'; // hide loader gif
+      chartKecamatanCanvas.style.display = 'block'; // show chart
+      const labels = data.map(item => item.kecamatan);
+      const values = data.map(item => item.jumlah_laporan);
+
+      // Fungsi untuk menghasilkan warna RGB acak
+      function getRandomRGB() {
+        const r = Math.floor(Math.random() * 255);
+        const g = Math.floor(Math.random() * 255);
+        const b = Math.floor(Math.random() * 255);
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      // Membuat array warna latar belakang dinamis
+      const backgroundColors = data.map(() => getRandomRGB());
+
+
+      const ctx = document.getElementById('chartKecamatan').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: backgroundColors,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Distribusi Laporan Jalan Berlubang per Kecamatan'
+            }
+          }
+        }
+      });
+    });
+
+
+
+
+  // Chart untuk Perkembangan Laporan Tahunan
+  fetch('/admin/yearly-reports', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken,
+    },
+  })
+    .then(response => response.json())
+    .then(yearlyReportsData => {
+      yearlyReportsLoader.style.display = 'none'; // hide loader gif
+      yearlyReportsCanvas.style.display = 'block'; // show chart
+
+      const labelsYearly = Object.keys(yearlyReportsData).sort(); // Urutkan label bulan
+      const dataYearly = labelsYearly.map(month => yearlyReportsData[month]);
+
+      var yearlyReportsChartCanvas = document.getElementById('yearlyReportsChart').getContext('2d');
+      var yearlyLineChart = new Chart(yearlyReportsChartCanvas, {
+        type: 'line',
+        data: {
+          labels: labelsYearly.map(month => month.split('-')[1]), // Ambil hanya nama bulan
+          datasets: [{
+            label: "Laporan Tahun Ini",
+            borderColor: "#e20e0e", // Warna garis berbeda
+            pointBorderColor: "#FFF",
+            pointBackgroundColor: "#e20e0e",
+            pointBorderWidth: 2,
+            pointHoverRadius: 4,
+            pointHoverBorderWidth: 1,
+            pointRadius: 4,
+            backgroundColor: 'transparent',
+            fill: false, // Jangan diisi warnanya
+            borderWidth: 2,
+            data: dataYearly
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 10,
+              fontColor: '#e20e0e',
+            }
+          },
+          tooltips: {
+            bodySpacing: 4,
+            mode: "nearest",
+            intersect: 0,
+            position: "nearest",
+            xPadding: 10,
+            yPadding: 10,
+            caretPadding: 10,
+            callbacks: {
+              title: function (tooltipItem) {
+                return 'Bulan: ' + tooltipItem[0].label;
+              },
+              label: function (tooltipItem) {
+                return 'Jumlah Laporan: ' + tooltipItem.raw;
+              }
+            }
+          },
+          layout: {
+            padding: { left: 15, right: 15, top: 15, bottom: 15 }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Jumlah Laporan'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Bulan'
+              }
+            }
+          }
+        }
+      });
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buat Laporan Baru</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 300px;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    #map-loader {
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h2>Form Laporan Baru</h2>
+  <form id="new-form">
+    <label for="title">Judul:</label><br />
+    <input type="text" name="title" id="title" /><br /><br />
+
+    <label>Lokasi:</label>
+    <div id="map-loader" style="text-align: center; margin-top: 10px;">
+      <span>Memuat peta...</span>
+    </div>
+    <div id="map"></div><br />
+    <label>Latitude:</label>
+    <input type="number" name="latitude" id="latitude" disabled />
+    <label>Longitude:</label>
+    <input type="number" name="longitude" id="longitude" disabled /><br /><br />
+
+    <button type="submit">Kirim Laporan</button>
+  </form>
+
+  <script>
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        console.log("Latitude: " + position.coords.latitude + ", Longitude: " + position.coords.longitude);
+      }, function (error) {
+        alert("Geolocation permission denied or blocked. Please enable geolocation.");
+      });
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module">
+    import { CustomMap } from "{{ url_for('static', filename='js/map.js') }}";
+
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const loader = document.getElementById('map-loader');
+    const mapContainer = document.getElementById('map');
+
+    let marker;
+    let map;
+
+    // Tampilkan loader, sembunyikan peta
+    try {
+      loader.style.display = 'block';
+      mapContainer.style.visibility = 'hidden';
+      map = await CustomMap.build('#map', { locate: true, zoom: 15 });
+      console.log('mulai');
+    } catch (error) {
+      // Code to handle the error
+      console.error(error.message);
+      alert('error', error.message);
+    } finally {
+      console.log('selesai');
+      // Sembunyikan loader, tampilkan peta
+      loader.style.display = 'none';
+      mapContainer.style.visibility = 'visible';
+    }
+
+    // Simpan posisi awal
+    const center = map.getCenter();
+    latitudeInput.value = center.latitude;
+    longitudeInput.value = center.longitude;
+
+    marker = map.addMarker([center.latitude, center.longitude], {
+      draggable: true,
+    });
+
+    marker.on('move', (e) => {
+      const pos = e.target.getLatLng();
+      latitudeInput.value = pos.lat;
+      longitudeInput.value = pos.lng;
+    });
+
+  </script>
+</body>
+</html>

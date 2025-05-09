@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Laporan Masuk</title>
+  <script src="{{ url_for('static', filename='atlantis-lite/js/plugin/webfont/webfont.min.js') }}"></script>
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/atlantis.min.css') }}">
+  <style>
+    body {
+      margin: 25px;
+    }
+
+    .clearfix {
+      zoom: 1;
+    }
+
+    .clearfix:before,
+    .clearfix:after {
+      content: "";
+      display: table;
+    }
+
+    .clearfix:after {
+      clear: both;
+    }
+  </style>
+  <style type='text/css' media="print">
+    @page {
+      size: auto;
+      margin: 0mm;
+    }
+
+    html {
+      background-color: #FFFFFF;
+      margin: 0px;
+      font-size: 10px;
+    }
+
+    body {
+      border: solid 1px #FFFFFF;
+      margin: 5px 12px 0px 0px;
+      font-size: 12px;
+      font-family: 'Arial';
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content-wrapper">
+    <div class="container-fluid px-md-5 px-sm-1">
+      <div class="text-center mt-3 mb-5">
+        <h3>Yuk Lapor</h3>
+        <h1>LAPORAN HASIL PEMERIKSAAN</h1>
+        <br>
+        {% if mode == 'perbulan' %}
+        {{ mode }}
+        <br>
+        Bulan: {{ time.bulan }}, Tahun: {{ time.tahun }}
+        {% else %}
+        {{ mode }}
+        <br>
+        Tanggal Mulai: {{ time.tgl_mulai }}
+        <br>
+        Tanggal Akhir: {{ time.tgl_akhir }}
+        {% endif %}
+      </div>
+      <div class='row mt-3'>
+        <div class="col-md-12 mx-auto">
+          <div class="card mb-3">
+            <div class="card-body">
+              <table class="table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Foto</th>
+                    <th>Status</th>
+                    <th>Kecamatan</th>
+                    <th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for report in reports %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                      <img src="{{ url_for('static', filename='img/report_pictures/' + report.image) }}"
+                        alt="Report Image" class="img-thumbnail preview-image"
+                        data-image="{{ url_for('static', filename='img/report_pictures/' + report.image) }}"
+                        style="width: 100px; cursor: pointer;">
+                    </td>
+                    <td>
+                      {% if report.status == 'proses' %}
+                      <span class="btn btn-sm btn-success">
+                        {{ report.status.capitalize() }}
+                      </span>
+                      {% elif report.status == 'gagal' %}
+                      <span class="btn btn-sm btn-danger">
+                        {{ report.status.capitalize() }}
+                      </span>
+                      {% else %}
+                      <span class="btn btn-sm btn-primary">
+                        {{ report.status.capitalize() }}
+                      </span>
+                      {% endif %}
+                    </td>
+                    <td>{{ report.kecamatan }}</td>
+                    <td>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <br><br>
+              <table width="100%">
+                <tr>
+                  <td width="70%"></td>
+                  <td width="30%">
+                    Dibuat Pada Tanggal :
+                    {{ now().strftime('%d %B %Y') }}
+                    <br>
+                    Pembuat Laporan
+                    <br><br><br><br>
+                    <u><b>{{ session['admin']['name'] }}</b></u>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--   Core JS Files   -->
+  <script src="{{ url_for('static', filename='atlantis-lite/js/core/jquery.3.2.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='atlantis-lite/js/core/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='atlantis-lite/js/core/bootstrap.min.js') }}"></script>
+
+
+  <script type="text/javascript">
+    window.print()
+  </script>
+</body>
+
+</html>

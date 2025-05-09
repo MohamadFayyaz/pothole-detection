@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kamera Mobile</title>
+  <style>
+    :root {
+      --primary: #71a894;
+      --secondary: #575656;
+      --dark: #333333;
+      --light: #F5F5F5;
+      --text-on-primary: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+    }
+
+    .container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #start-screen,
+    #camera-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background: var(--dark);
+    }
+
+    #start-screen {
+      display: flex;
+    }
+
+    .start-btn,
+    .back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: var(--secondary);
+      border: none;
+      color: var(--text-on-primary);
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .start-btn:hover,
+    .back-btn:hover {
+      background: #5e947e;
+    }
+
+    #camera-screen video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .shutter {
+      position: absolute;
+      bottom: 6rem;
+      width: 75px;
+      height: 75px;
+      background-color: var(--light);
+      border: 5px solid rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 2;
+      transition: transform 0.2s ease;
+    }
+
+    .shutter:active {
+      transform: scale(0.9);
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: var(--secondary);
+    }
+
+    .thumbnails {
+      position: absolute;
+      bottom: 6rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 3;
+    }
+
+    .thumbnails img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #overlay-preview {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(51, 51, 51, 0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+    }
+
+    #overlay-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 12px;
+      border: 4px solid var(--primary);
+    }
+
+    .overlay-back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: var(--secondary);
+      border: none;
+      color: var(--text-on-primary);
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .photo-gallery {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .photo-gallery img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid var(--light);
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Start Screen -->
+    <div id="start-screen">
+      <button class="start-btn" onclick="startCamera()">📷 Mulai Kamera</button>
+      <div class="photo-gallery" id="gallery"></div>
+    </div>
+
+    <!-- Camera Screen -->
+    <div id="camera-screen">
+      <video id="camera" autoplay playsinline></video>
+      <button class="back-btn" onclick="backToStart()">← Kembali</button>
+      <div class="shutter" onclick="takePhoto()"></div>
+      <div class="thumbnails" id="thumbnails"></div>
+    </div>
+
+    <!-- Overlay Preview -->
+    <div id="overlay-preview">
+      <button class="overlay-back-btn" onclick="closePreview()">← Kembali</button>
+      <img id="full-preview" src="" alt="Preview Full" />
+    </div>
+  </div>
+
+  <script>
+    const startScreen = document.getElementById('start-screen');
+    const cameraScreen = document.getElementById('camera-screen');
+    const thumbnails = document.getElementById('thumbnails');
+    const overlay = document.getElementById('overlay-preview');
+    const fullPreview = document.getElementById('full-preview');
+    const video = document.getElementById('camera');
+
+    let stream = null;
+
+    function startCamera() {
+      startScreen.style.display = 'none';
+      cameraScreen.style.display = 'flex';
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(s => {
+          stream = s;
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          alert('Kamera tidak bisa dibuka: ' + err.message);
+        });
+    }
+
+    let photoTaken = false;
+
+    function takePhoto() {
+      if (photoTaken) {
+        const confirmReplace = confirm("Foto sudah diambil. Ambil ulang akan mengganti foto sebelumnya. Lanjutkan?");
+        if (!confirmReplace) return;
+
+        // Hapus foto sebelumnya
+        thumbnails.innerHTML = "";
+        document.getElementById('gallery').innerHTML = "";
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+
+      const dataUrl = canvas.toDataURL('image/jpeg');
+
+      const thumb = document.createElement('img');
+      thumb.src = dataUrl;
+      thumb.onclick = () => openPreview(dataUrl);
+      thumbnails.prepend(thumb);
+
+      const galleryImg = document.createElement('img');
+      galleryImg.src = dataUrl;
+      galleryImg.onclick = () => openPreview(dataUrl);
+      document.getElementById('gallery').prepend(galleryImg);
+
+      photoTaken = true;
+    }
+
+    function openPreview(src) {
+      fullPreview.src = src;
+      overlay.style.display = 'flex';
+    }
+
+    function closePreview() {
+      overlay.style.display = 'none';
+    }
+
+    function backToStart() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      video.srcObject = null;
+      cameraScreen.style.display = 'none';
+      startScreen.style.display = 'flex';
+    }
+  </script>
+
+</body>
+</html>

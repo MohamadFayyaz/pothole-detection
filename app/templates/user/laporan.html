@@ -1,0 +1,142 @@
+{% extends "user/template_user.html.j2" %}
+
+{% block title_section %}
+Data Laporan
+{% endblock %}
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Laporan</h2>
+<h5 class="text-white op-7 mb-2">Halaman Laporan</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="row mt--2">
+  <div class="col-md-12">
+    <div class="card full-height">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          Data Laporan
+        </div>
+        <a href="{{ url_for('add_report') }}">
+          <button class="btn btn-primary">
+            <span class="btn-label">
+              <i class="fa fa-plus"></i>
+            </span>
+            Tambah Laporan
+          </button>
+        </a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="datatables-default" class="display table table-striped table-hover" cellspacing="0" width="100%">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Foto</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Kecamatan</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for report in reports %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                  <img src="{{ url_for('static', filename='img/report_pictures/' + report.image) }}" alt="Report Image"
+                    class="img-thumbnail preview-image"
+                    data-image="{{ url_for('static', filename='img/report_pictures/' + report.image) }}"
+                    style="width: 100px; cursor: pointer;">
+                </td>
+                <td>
+                  {% if report.status == 'proses' %}
+                  <span class="btn btn-sm btn-success">
+                    {{ report.status.capitalize() }}
+                  </span>
+                  {% elif report.status == 'ditolak' %}
+                  <span class="btn btn-sm btn-danger">
+                    {{ report.status.capitalize() }}
+                  </span>
+                  {% else %}
+                  <span class="btn btn-sm btn-primary">
+                    {{ report.status.capitalize() }}
+                  </span>
+                  {% endif %}
+                </td>
+                <td>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</td>
+                <td>{{ report.kecamatan }}</td>
+                <td>
+                  <div class="btn-group ml-3" role="group">
+                    <!-- Form untuk menghapus laporan -->
+                    <form method="post"
+                      action="{{ url_for('user_report_delete', report_id=report.pothole_report_id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <button type="submit" onclick="return confirm('Apakah anda yakin?')" class="btn btn-sm btn-danger"
+                        title="Hapus">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script_section %}
+<script>
+  $(document).ready(function () {
+    $('#datatables-default').DataTable();
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Get all images with the class 'preview-image'
+    const images = document.querySelectorAll('.preview-image');
+
+    // Create the overlay element
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    overlay.style.display = 'none';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '9999';
+
+    // Create image container inside the overlay
+    const overlayImage = document.createElement('img');
+    overlayImage.style.maxWidth = '90%';
+    overlayImage.style.maxHeight = '90%';
+    overlayImage.style.margin = 'auto';
+    overlayImage.style.borderRadius = '8px';
+    overlay.appendChild(overlayImage);
+
+    // Append overlay to the body
+    document.body.appendChild(overlay);
+
+    // Function to show the overlay with the image
+    images.forEach(function (img) {
+      img.addEventListener('click', function () {
+        const imageUrl = img.getAttribute('data-image');
+        overlayImage.src = imageUrl; // Set the clicked image's URL
+        overlay.style.display = 'flex'; // Show overlay
+      });
+    });
+
+    // Hide the overlay when clicked
+    overlay.addEventListener('click', function () {
+      overlay.style.display = 'none';
+    });
+  });
+</script>
+{% endblock %}

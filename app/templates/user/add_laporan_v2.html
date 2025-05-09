@@ -1,0 +1,154 @@
+{% extends "user/template_user.html.j2" %}
+
+{% block title_section %}
+Tambah Laporan
+{% endblock %}
+
+{% block head_section %}
+{% endblock %}
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Dashboard</h2>
+<h5 class="text-white op-7 mb-2">Halaman Dashboard</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="row mt--2">
+  <div class="col-md-12">
+    <div class="card full-height">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          Data Laporan
+        </div>
+        <button class="btn btn-primary">
+          <span class="btn-label">
+            <i class="fa fa-plus"></i>
+          </span>
+          Tambah Laporan
+        </button>
+      </div>
+      <div class="card-body">
+        <form id="new-form-form" class="container mt-4">
+          <!-- Location -->
+          <input type="hidden" step="any" id="latitude" name="latitude" value="-6.175389" class="form-control"
+            placeholder="Latitude">
+          <input type="hidden" step="any" id="longitude" name="longitude" value="106.827139" class="form-control"
+            placeholder="Longitude">
+          <input type="hidden" name="captureImage" id="captureImage">
+
+
+          <!-- Dokumentasi -->
+          <div class="form-group">
+            <label for="documentations-input">Dokumentasi</label>
+            <small id="documentations-more-info" class="form-text text-muted">
+              Anda dapat menyertakan foto sebagai dokumentasi.
+            </small>
+
+            <div class="mb-2">
+              <button id="open-documentations-camera-button" class="btn btn-outline-secondary btn-sm" type="button">Buka
+                Kamera</button>
+            </div>
+
+            <!-- Kamera dan canvas -->
+            <div id="camera-container" class="mt-3 d-none">
+              <video id="camera-video" class="w-100 mb-2" style="max-height: 300px;" autoplay></video>
+              <canvas id="camera-canvas" class="d-none"></canvas>
+              <div class="form-group">
+                <select id="camera-select" class="form-control mb-2"></select>
+                <button id="camera-take-button" class="btn btn-primary btn-sm" type="button">Ambil Gambar</button>
+              </div>
+            </div>
+            <img src="" id="resultPicture" style="max-width: 150px; margin: 10px;">
+
+            <!-- List Gambar -->
+            <ul id="documentations-taken-list" class="list-group mt-3"></ul>
+          </div>
+
+          <!-- Tombol -->
+          <div class="form-group text-right">
+            <button class="btn btn-primary" type="submit">Buat Laporan</button>
+            <a class="btn btn-outline-secondary" href="#/">Batal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script_section %}
+<script>
+  const latitudeInput = document.getElementById('latitude');
+  const longitudeInput = document.getElementById('longitude');
+
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+      console.log("Latitude: " + position.coords.latitude + ", Longitude: " + position.coords.longitude);
+      latitudeInput.value = position.coords.latitude;
+      longitudeInput.value = position.coords.longitude;
+    }, function (error) {
+      alert("Geolocation permission denied or blocked. Please enable geolocation.");
+    });
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+</script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script>
+  const videoElement = document.getElementById('camera-video');
+  const selectCameraElement = document.getElementById('camera-select');
+  const canvasElement = document.getElementById('camera-canvas');
+  const openCameraBtn = document.getElementById('open-documentations-camera-button');
+  const takePictureBtn = document.getElementById('camera-take-button');
+  const outputList = document.getElementById('documentations-taken-list');
+  const captureImage = document.getElementById('captureImage');
+  const resultPicture = document.getElementById('resultPicture');
+
+  const camera = new Camera({
+    video: videoElement,
+    cameraSelect: selectCameraElement,
+    canvas: canvasElement
+  });
+
+  let cameraActive = false;
+
+  openCameraBtn.addEventListener('click', async () => {
+    if (cameraActive) {
+      await camera.stop();
+      document.getElementById('camera-container').classList.remove('d-block');
+      document.getElementById('camera-container').classList.add('d-none');
+      openCameraBtn.textContent = "Nyalakan Kamera";
+    } else {
+      await camera.launch();
+      document.getElementById('camera-container').classList.remove('d-none');
+      document.getElementById('camera-container').classList.add('d-block');
+      openCameraBtn.textContent = "Matikan Kamera";
+    }
+    cameraActive = !cameraActive;
+  });
+
+  camera.addCheeseButtonListener('#camera-take-button', async () => {
+    // alert jika ada gambar sebelumnya
+    const isPreviousImageAvailable = resultPicture.src && !resultPicture.src.includes('add-report');
+
+    if (isPreviousImageAvailable) {
+      const userConfirmed = confirm('Gambar sebelumnya akan diganti. Lanjutkan?');
+      if (!userConfirmed) {
+        return;
+      }
+    }
+
+    const blob = await camera.takePicture();
+    if (!blob) {
+      takePictureBtn.disabled = false;
+      takePictureBtn.innerHTML = originalText;
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+
+    captureImage.value = url;
+    resultPicture.src = url;
+  });
+</script>
+{% endblock %}

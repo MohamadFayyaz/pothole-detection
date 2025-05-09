@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+<head>
+  {% include "header.html" %}
+</head>
+
+
+<body data-bs-spy="scroll" data-bs-target="#navbar">
+
+  <!-- ===============================================-->
+  <!--    Main Content-->
+  <!-- ===============================================-->
+  <main class="main" id="top">
+    {% include "navbar.html" %}
+
+
+    <!-- ============================================-->
+    <!-- <section> begin ============================-->
+    <section class="pt-8 py-lg-0" id="hero">
+
+      <div class="container-xxl">
+        <div class="row align-items-center min-vh-lg-100">
+          <div class="col-lg order-lg-1 text-center"><img class="img-fluid"
+              src="{{ url_for('static', filename='img/illustrations/hero.png') }}" alt="" /></div>
+          <div class="col-lg mt-5 mt-lg-0">
+            <h1 class="lh-sm font-cursive fw-medium fs-6 fs-sm-8 fs-md-11 fs-lg-9 fs-xl-11 fs-xxl-12">Solusi Cerdas
+              untuk Jalanan Lebih Aman
+            </h1>
+            <p class="mt-4 fs-2 fs-md-4 lh-sm">Bangun kota yang lebih aman dan nyaman dengan sistem otomatis pendeteksi
+              serta pelaporan lubang jalan berbasis AI dan partisipasi masyarakat.</p>
+            <a href="{{ url_for('add_report') }}">
+              <button class="btn btn-success mt-4">Mulai</button>
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- end of .container-->
+
+    </section>
+    <!-- <section> close ============================-->
+    <!-- ============================================-->
+
+
+
+
+    <!-- ============================================-->
+    <!-- <section> begin ============================-->
+    <section class="pt-xxl-0" id="features">
+
+      <div class="container-xxl">
+        <div class="row justify-content-center text-center">
+          <div class="col-lg-10 col-xl-8">
+            <h1 class="display-6 font-cursive">Membayangkan Ulang Cara Kita Menjaga Infrastruktur</h1>
+            <p class="fs-md-1 mt-4">Sistem ini bukan hanya tentang teknologi. Ini tentang bagaimana masyarakat,
+              pemerintah, dan teknologi dapat bekerja bersama menjaga kualitas jalanan dan keselamatan semua pengguna.
+            </p>
+          </div>
+        </div>
+        <div class="row row-cols-1 row-cols-xl-3 g-4 mt-3 text-center">
+          <div class="col-12 col-md-6">
+            <div class="card py-md-6 px-md-4 mt-3 h-100 box-shadow-all border-0">
+              <div class="card-body"><img src="{{ url_for('static', filename='img/icons/icon1.png') }}" alt="" />
+                <h3 class="py-3">Deteksi Cerdas</h3>
+                <p class="lead mb-0">Dengan algoritma computer vision, sistem mendeteksi lubang dari
+                  foto jalan tanpa campur tangan manual.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="card py-md-6 px-md-4 mt-3 h-100 box-shadow-all border-0">
+              <div class="card-body"><img src="{{ url_for('static', filename='img/icons/icon2.png') }}" alt="" />
+                <h3 class="py-3">Terintegrasi GPS</h3>
+                <p class="lead mb-0">Setiap laporan masyarakat dilengkapi lokasi akurat. Laporan-laporan ini langsung
+                  terhubung ke dashboard pemerintah atau pengelola jalan.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card py-md-6 px-md-4 mt-3 h-100 box-shadow-all border-0">
+              <div class="card-body"><img src="{{ url_for('static', filename='img/icons/icon3.png') }}" alt="" />
+                <h3 class="py-3">Fleksibel dan Mudah Digunakan</h3>
+                <p class="lead mb-0">Sistem kami dirancang agar dapat digunakan di berbagai situasi, baik oleh individu,
+                  komunitas, maupun instansi pemerintah.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end of .container-->
+
+    </section>
+    <!-- <section> close ============================-->
+    <!-- ============================================-->
+
+
+
+
+    <!-- ============================================-->
+    <!-- <section> begin ============================-->
+    <section class="pt-xxl-0" id="example">
+
+      <div class="container-xxl">
+        <div class="row align-items-center gx-1">
+          <div class="col-xl-6"><img src="{{ url_for('static', filename='img/icons/icon3.png') }}" alt="" />
+            <h1 class="display-5 lh-sm my-4 font-cursive">Bangun Solusi Nyata untuk Masalah Jalan Berlubang</h1>
+            <p class="fs-1">Bangun Solusi Nyata untuk Masalah Jalan Berlubang
+              Jalan berlubang bukan hanya mengganggu kenyamanan, tapi juga bisa membahayakan keselamatan. Dengan
+              dukungan teknologi, kini masyarakat dapat membantu melaporkan kondisi jalan rusak secara lebih cepat dan
+              akurat. Melalui pendekatan berbasis computer vision dan GPS, pelaporan menjadi lebih efisien untuk
+              mendorong perbaikan yang tepat sasaran.</p>
+          </div>
+          <div class="col-xl-6">
+            <div class="row justify-content-center gx-4">
+              <img src="{{ url_for('static', filename='img/example.png') }}" width="50%" height="25%"
+                alt="gambar contoh pendeteksi">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end of .container-->
+
+    </section>
+    <!-- <section> close ============================-->
+    <!-- ============================================-->
+
+
+    {% include "footer.html" %}
+
+  </main>
+  <!-- ===============================================-->
+  <!--    End of Main Content-->
+  <!-- ===============================================-->
+
+
+
+
+  {% include "script.html" %}
+</body>
+
+</html>

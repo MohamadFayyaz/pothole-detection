@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk - Solusi Jalanan Lebih Aman</title>
+  <link rel="apple-touch-icon" sizes="180x180"
+    href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32"
+    href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16"
+    href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
+  <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicons/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/bootstrap.min.css') }}">
+  <style>
+    :root {
+      --primary: #2c3e50;
+      /* Biru tua elegan */
+      --secondary: #7f8c8d;
+      /* Abu-abu */
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      /* Background terang */
+      --text-on-primary: #ffffff;
+      --accent: #3498db;
+      /* Biru aksen */
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light);
+      color: var(--dark);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    header {
+      background-color: var(--primary);
+      padding: 20px 0;
+      text-align: center;
+      color: var(--text-on-primary);
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: 60px auto;
+      padding: 20px;
+    }
+
+    .form-container {
+      background-color: #ffffff;
+      padding: 40px 30px;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-title {
+      text-align: center;
+      color: var(--primary);
+      font-size: 26px;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+      outline: none;
+    }
+
+    .password-toggle {
+      position: absolute;
+      top: 42px;
+      right: 15px;
+      cursor: pointer;
+      color: var(--secondary);
+      font-size: 14px;
+    }
+
+    .btn {
+      background-color: var(--accent);
+      color: var(--text-on-primary);
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    .register-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .register-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      padding: 15px 0;
+      color: var(--secondary);
+    }
+
+    .alert {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} w-100 m-auto" role="alert">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div class="form-container mt-3">
+      <h2 class="form-title">Masuk ke Akun Anda</h2>
+      <form id="loginForm" action="{{ url_for('login_admin_proses') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" name="username" id="username" required placeholder="Masukkan username Anda">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" required placeholder="Masukkan password Anda">
+          <span class="password-toggle" id="togglePassword">Lihat</span>
+        </div>
+        <button type="submit" class="btn" id="loginBtn">Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 YukLapor. Solusi Cerdas untuk Jalanan Lebih Aman.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const passwordInput = document.getElementById('password');
+      const togglePassword = document.getElementById('togglePassword');
+
+      // Toggle password visibility
+      togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.textContent = type === 'password' ? 'Lihat' : 'Sembunyikan';
+      });
+    });
+  </script>
+</body>
+</html>

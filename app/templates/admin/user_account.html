@@ -1,0 +1,87 @@
+{% extends "admin/template_admin.html.j2" %}
+
+{% block title_section %}
+Data Akun Pengguna
+{% endblock %}
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Akun Pengguna</h2>
+<h5 class="text-white op-7 mb-2">Halaman Akun Pengguna</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="row mt--2">
+  <div class="col-md-12">
+    <div class="card full-height">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          Data Akun Pengguna
+        </div>
+        <form method="get" action="{{ url_for('user_account') }}" class="d-flex align-items-center gap-2">
+          <label for="statusFilter" class="mb-0 me-3 fw-semibold text-dark">Filter Status: </label>
+          <select id="statusFilter" name="status" class="form-select form-group form-control form-select-sm"
+            onchange="this.form.submit()">
+            <option value="">Semua Status</option>
+            <option value="1" {% if request.args.get('status')=='1' %}selected{% endif %}>Aktif</option>
+            <option value="0" {% if request.args.get('status')=='0' %}selected{% endif %}>Nonaktif</option>
+          </select>
+        </form>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="datatables-default" class="display table table-striped table-hover" cellspacing="0" width="100%">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama</th>
+                <th>Status</th>
+                <th>No WA</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ user.name }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('toggle_user_status', user_id=user.user_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <button type="submit"
+                      class="btn btn-sm {% if user.status == 1 %}btn-success{% else %}btn-danger{% endif %}"
+                      data-toggle="tooltip" data-placement="top"
+                      title="{% if user.status == 1 %}Klik Untuk Nonaktifkan{% else %}Klik Untuk Aktifkan{% endif %}">
+                      {% if user.status == 1 %}
+                      Aktifkan
+                      {% else %}
+                      Nonaktifkan
+                      {% endif %}
+                    </button>
+                  </form>
+                </td>
+                <td>{{ user.no_wa }}</td>
+                <td class="text-center">
+                  <a class="btn-group" href="{{ url_for('user_account_edit', user_id=user.user_id) }}">
+                    <button class="btn btn-sm btn-success" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script_section %}
+<script>
+  $(document).ready(function () {
+    $('#datatables-default').DataTable();
+  });
+</script>
+{% endblock %}
