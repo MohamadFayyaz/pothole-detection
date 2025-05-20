@@ -38,6 +38,8 @@ Data Laporan
                 <th>Status</th>
                 <th>Tanggal</th>
                 <th>Kecamatan</th>
+                <th>Longtitude</th>
+                <th>Latitude</th>
                 <th>Pengguna</th>
                 <th>Admin</th>
                 <th class="text-center">Aksi</th>
@@ -70,6 +72,8 @@ Data Laporan
                 </td>
                 <td>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</td>
                 <td>{{ report.kecamatan }}</td>
+                <td>{{ report.longtitude }}</td>
+                <td>{{ report.latitude }}</td>
                 <td>{{ report.nama_user }}</td>
                 <td>{{ report.nama_admin }}</td>
                 <td class="text-center">

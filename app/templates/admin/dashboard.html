@@ -179,36 +179,56 @@ Dashbord Admin
     mapContainer.style.visibility = 'hidden';
     map = await CustomMap.build('#map', { locate: true, zoom: 19, scrollWheelZoom: true, });
 
-    // Load file GeoJSON lokal
-    fetch('/admin/geojson', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': csrfToken, // kirim token ke server
-      },
-    })
-      .then(response => {
-        if (!response.ok) throw new Error("Unauthorized");
-        return response.json();
-      })
-      .then(data => {
-        geojsonLayer = L.geoJSON(data, {
-          onEachFeature: function (feature, layer) {
-            var namaKabupaten = feature.properties.WADMKC || "Nama Kabupaten Tidak Tersedia";
-            layer.bindPopup('<b>' + namaKabupaten + '</b>');
-          },
-          style: {
-            color: 'blue',
-            fillColor: 'skyblue',
-            fillOpacity: 0.2
-          }
-        }).addTo(map.leafletMap);
-
-        map.leafletMap.fitBounds(geojsonLayer.getBounds());
-      })
-      .catch(err => {
-        console.log(err);
-        alert("Gagal memuat GeoJSON: " + err.message);
+    try {
+      const response = await fetch('/admin/geojson', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json'
+        },
       });
+
+      if (!response.ok) throw new Error("Unauthorized");
+
+      const data = await response.json();
+
+      // Tambahkan layer kecamatan
+      let kecamatanLayer = L.geoJSON(data.kecamatan, {
+        onEachFeature: function (feature, layer) {
+          const namaKecamatan = feature.properties.WADMKC || "Nama Kecamatan Tidak Tersedia";
+          layer.bindPopup(`<b>${namaKecamatan}</b>`);
+        },
+        style: {
+          color: 'blue',
+          fillColor: 'skyblue',
+          fillOpacity: 0.2
+        }
+      }).addTo(map.leafletMap);
+
+      // Tambahkan layer jalan
+      let jalanLayer = L.geoJSON(data.jalan, {
+        onEachFeature: function (feature, layer) {
+          const namaJalan = feature.properties.name || "Jalan Tanpa Nama";
+          layer.bindPopup(`<b>${namaJalan}</b>`);
+        },
+        style: {
+          color: '#44ff00', // lebih terang dari sebelumnya
+          weight: 3
+        }
+      }).addTo(map.leafletMap);
+
+      // Fit bounds
+      const combinedBounds = L.featureGroup([kecamatanLayer, jalanLayer]).getBounds();
+      map.leafletMap.fitBounds(combinedBounds);
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memuat GeoJSON: " + err.message);
+    } finally {
+      loader.style.display = 'none';
+      mapContainer.style.visibility = 'visible';
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       // Mendeklarasikan csrfToken dan URL base
       const csrfToken = "{{ csrf_token() }}"; // Menyisipkan CSRF token dari Flask
@@ -259,6 +279,13 @@ Dashbord Admin
               <i class="fas fa-trash"></i>
             </button>
           </form>
+
+          <!-- Form untuk menghapus laporan -->
+            <a href="https://www.google.com/maps?q=${report.latitude},${report.longtitude}" target="_blank">
+              <button class="btn btn-sm btn-primary" title="Google Maps">
+                <i class="fas fa-map-marked-alt"></i>
+              </button>
+            </a>
         </div>
       `);
 

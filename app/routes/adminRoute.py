@@ -1,9 +1,9 @@
 from app import app
 from app.middleware.middleware import admin_guest_only,admin_login_required,load_user,admin_role_required
-from flask import session, redirect, url_for, jsonify, send_file
+from flask import session, redirect, url_for, jsonify, send_file,current_app
 import os
 from app.controller import AdminAccountController, AdminAuthController,AdminDashboardController,AdminReportController,AdminUserAccountController, AdminRecapController
-
+import json
 
 # AUTH
 
@@ -70,12 +70,34 @@ def chart():
 def yearly_reports():
     return AdminDashboardController.yearly_reports()
 
-@app.route('/admin/geojson',methods=['POST'])
+@app.route('/admin/geojson', methods=['GET','POST'])
 @admin_login_required
 @admin_role_required('admin')
 def serve_geojson():
-    geojson_path = os.path.join('protected_data', 'kordinat.geojson')
-    return send_file(geojson_path, mimetype='application/json')
+    geojson_kecamatan_path = os.path.join(current_app.root_path,'protected_data', 'kordinat.geojson')
+    geojson_jalan_path = os.path.join(current_app.root_path,'protected_data', 'roads.geojson')
+
+    print(os.path.abspath(geojson_kecamatan_path))
+    try:
+        with open(geojson_kecamatan_path, 'r', encoding='utf-8') as f:
+            kecamatan_geojson = json.load(f)
+
+        with open(geojson_jalan_path, 'r', encoding='utf-8') as f:
+            jalan_geojson = json.load(f)
+
+        return jsonify({
+            "kecamatan": kecamatan_geojson,
+            "jalan": jalan_geojson
+        })
+
+    except FileNotFoundError as e:
+        return jsonify({"error": f"Berkas tidak ditemukan: {str(e)}"}), 404
+
+    except json.JSONDecodeError as e:
+        return jsonify({"error": f"Format GeoJSON tidak valid: {str(e)}"}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Terjadi kesalahan: {str(e)}"}), 500
 
 @app.route('/admin/dashboard/report/update-status/<int:report_id>', methods=['POST'])
 @admin_login_required

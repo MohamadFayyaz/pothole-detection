@@ -3,7 +3,7 @@ from flask import request, render_template, redirect, url_for, session, flash, j
 from app.model.PotholeReportModel import PotholeReportModel
 from collections import Counter
 from datetime import datetime
-from sqlalchemy import extract, func
+from sqlalchemy import extract, func, or_
 from config import Config
 
 import os
@@ -52,7 +52,11 @@ def dashboard():
     return render_template('admin/dashboard.html',reports_json=reports_json,report_status=result)
 
 def chart():
-    data = PotholeReportModel.query.with_entities(PotholeReportModel.kecamatan).all()
+    data = PotholeReportModel.query.with_entities(PotholeReportModel.kecamatan).filter(
+    or_(
+        PotholeReportModel.status == 'proses',
+        PotholeReportModel.status == 'selesai'
+    )).all()
 
     # Ambil nama kecamatan dan simpan dalam list (pastikan sudah strip dan lower untuk konsistensi)
     kecamatan_list = [row.kecamatan.strip().lower() for row in data if row.kecamatan]
@@ -67,7 +71,11 @@ def chart():
 
 def get_yearly_reports():
     current_year = datetime.now().year
-    reports = PotholeReportModel.query.filter(extract('year', PotholeReportModel.datetime) == current_year).all()
+    reports = PotholeReportModel.query.filter(
+    or_(
+        PotholeReportModel.status == 'proses',
+        PotholeReportModel.status == 'selesai'
+    )).filter(extract('year', PotholeReportModel.datetime) == current_year).all()
     reports_data = {}
     for month in range(1, 13):
         reports_data[f"{current_year}-{month:02d}"] = 0

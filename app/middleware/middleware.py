@@ -29,6 +29,7 @@ def admin_role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            print(session)
             if 'admin' not in session or session['admin']['role'] != role:
                 return "Unauthorized", 403
             return f(*args, **kwargs)
