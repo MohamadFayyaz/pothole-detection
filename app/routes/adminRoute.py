@@ -35,6 +35,18 @@ def admin_logout():
 def report_admin():
     return AdminReportController.report()
 
+@app.route('/admin/report/<int:report_id>')
+@admin_login_required
+@admin_role_required('admin')
+def report_edit_admin(report_id):
+    return AdminReportController.report_edit_admin(report_id)
+    
+@app.route('/admin/report/edit', methods=['POST'])
+@admin_login_required
+@admin_role_required('admin')
+def report_edit_proses():
+    return AdminReportController.report_edit_proses()
+
 @app.route('/admin/report/update-status/<int:report_id>', methods=['POST'])
 @admin_login_required
 @admin_role_required('admin')

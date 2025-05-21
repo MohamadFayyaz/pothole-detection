@@ -2,6 +2,7 @@ from flask import request, render_template, session, flash, redirect, url_for
 from app import db, app
 from ultralytics import YOLO
 from app.model.PotholeReportModel import PotholeReportModel
+from app.model.AdministratorModel import AdministratorModel
 from datetime import datetime, timedelta    
 from config import Config
 
@@ -16,7 +17,18 @@ import io
 import logging
 
 def report():
-    reports = PotholeReportModel.query.filter_by(user_id=session['user']['id'],).order_by(PotholeReportModel.datetime.desc()).all()
+    reports = db.session.query(
+            PotholeReportModel.pothole_report_id,
+            PotholeReportModel.image,
+            PotholeReportModel.address,
+            PotholeReportModel.status,
+            PotholeReportModel.datetime,
+            PotholeReportModel.pesan,
+            AdministratorModel.name.label("nama_admin")
+        ).outerjoin(AdministratorModel, PotholeReportModel.administrator_id == AdministratorModel.administrator_id) \
+        .filter(PotholeReportModel.user_id ==session['user']['id']) \
+        .order_by(PotholeReportModel.datetime.desc()) \
+        .all()
     return render_template('user/laporan.html',reports=reports)
 
 def add_report():

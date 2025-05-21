@@ -1,6 +1,7 @@
 from app import db
 from app.model.AdministratorModel import AdministratorModel
 from app.model.UserModel import UserModel
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 class PotholeReportModel(db.Model):
 
@@ -16,6 +17,7 @@ class PotholeReportModel(db.Model):
     image = db.Column(db.String(250), nullable=False)
     address = db.Column(db.String(250), nullable=False)
     kecamatan = db.Column(db.String(250), nullable=False)
+    pesan = db.Column(LONGTEXT, nullable=True)
     status = db.Column(db.Enum("selesai", "proses", "ditolak", name="status_report"), nullable=False)
 
     def __repr__(self):

@@ -35,7 +35,9 @@ Data Laporan
                 <th>Foto</th>
                 <th>Status</th>
                 <th>Tanggal</th>
-                <th>Kecamatan</th>
+                <th>Alamat</th>
+                <th>Admin</th>
+                <th>Pesan Admin</th>
                 <th class="text-center">Aksi</th>
               </tr>
             </thead>
@@ -65,7 +67,9 @@ Data Laporan
                   {% endif %}
                 </td>
                 <td>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</td>
-                <td>{{ report.kecamatan }}</td>
+                <td>{{ report.address }}</td>
+                <td>{{ report.nama_admin if report.nama_admin else '-' }}</td>
+                <td>{{ report.pesan if report.pesan else '-' }}</td>
                 <td>
                   <div class="btn-group ml-3" role="group">
                     <!-- Form untuk menghapus laporan -->

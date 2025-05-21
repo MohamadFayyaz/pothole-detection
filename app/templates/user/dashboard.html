@@ -93,7 +93,9 @@ Dashbord User
                 <th>No</th>
                 <th>Foto</th>
                 <th>Status</th>
-                <th>Kecamatan</th>
+                <th>Alamat</th>
+                <th>Admin</th>
+                <th>Pesan Admin</th>
                 <th>Tanggal</th>
               </tr>
             </thead>
@@ -112,7 +114,7 @@ Dashbord User
                   <span class="btn btn-sm btn-success">
                     {{ report.status.capitalize() }}
                   </span>
-                  {% elif report.status == 'gagal' %}
+                  {% elif report.status == 'ditolak' %}
                   <span class="btn btn-sm btn-danger">
                     {{ report.status.capitalize() }}
                   </span>
@@ -122,7 +124,9 @@ Dashbord User
                   </span>
                   {% endif %}
                 </td>
-                <td>{{ report.kecamatan }}</td>
+                <td>{{ report.address }}</td>
+                <td>{{ report.nama_admin if report.nama_admin else '-' }}</td>
+                <td>{{ report.pesan if report.pesan else '-' }}</td>
                 <td>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</td>
               </tr>
               {% endfor %}

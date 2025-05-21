@@ -1,12 +1,27 @@
 from flask import request, render_template, session
 from app.model.PotholeReportModel import PotholeReportModel
+from app.model.AdministratorModel import AdministratorModel
+from app import db, app
 from datetime import datetime
 from sqlalchemy import func
 
 def page():
     return render_template('index.html')
 def dashboard():
-    reports = PotholeReportModel.query.filter_by(user_id=session['user']['id'],).order_by(PotholeReportModel.user_id.desc()).limit(5)
+    reports = db.session.query(
+        PotholeReportModel.pothole_report_id,
+        PotholeReportModel.image,
+        PotholeReportModel.address,
+        PotholeReportModel.status,
+        PotholeReportModel.datetime,
+        PotholeReportModel.pesan,
+        AdministratorModel.name.label("nama_admin")
+    ).outerjoin(AdministratorModel, PotholeReportModel.administrator_id == AdministratorModel.administrator_id) \
+    .filter(PotholeReportModel.user_id ==session['user']['id']) \
+    .order_by(PotholeReportModel.datetime.desc()) \
+    .limit(5) \
+    .all()
+    # reports = PotholeReportModel.query.filter_by(user_id=session['user']['id'],).order_by(PotholeReportModel.user_id.desc()).limit(5)
 
     # ambil awal bulan dan akhir bulan sekarang
     now = datetime.now()

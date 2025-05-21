@@ -37,11 +37,8 @@ Data Laporan
                 <th>Foto</th>
                 <th>Status</th>
                 <th>Tanggal</th>
-                <th>Kecamatan</th>
-                <th>Longtitude</th>
-                <th>Latitude</th>
+                <th>Alamat</th>
                 <th>Pengguna</th>
-                <th>Admin</th>
                 <th class="text-center">Aksi</th>
               </tr>
             </thead>
@@ -71,45 +68,21 @@ Data Laporan
                   {% endif %}
                 </td>
                 <td>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</td>
-                <td>{{ report.kecamatan }}</td>
-                <td>{{ report.longtitude }}</td>
-                <td>{{ report.latitude }}</td>
+                <td>{{ report.address }}</td>
                 <td>{{ report.nama_user }}</td>
-                <td>{{ report.nama_admin }}</td>
                 <td class="text-center">
                   <div class="btn-group" role="group">
-                    <form method="post"
-                      action="{{ url_for('update_report_status', report_id=report.pothole_report_id) }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                      <input type="hidden" name="status" value="selesai">
-                      <button type="submit" class="btn btn-sm btn-success" title="Selesaikan">
-                        <i class="fas fa-check"></i>
+                    <a href="{{ url_for('report_edit_admin', report_id=report.pothole_report_id) }}">
+                      <button class="btn btn-sm btn-success" title="Hapus">
+                        <i class="fas fa-edit"></i>
                       </button>
-                    </form>
-                    <form method="post"
-                      action="{{ url_for('update_report_status', report_id=report.pothole_report_id) }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                      <input type="hidden" name="status" value="proses">
-                      <button type="submit" class="btn btn-sm btn-primary" title="Proses">
-                        <i class="fas fa-sync"></i>
-                      </button>
-                    </form>
-                    <form method="post"
-                      action="{{ url_for('update_report_status', report_id=report.pothole_report_id) }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                      <input type="hidden" name="status" value="ditolak">
-                      <button type="submit" class="btn btn-sm btn-warning" title="Tolak">
-                        <i class="fas fa-times"></i>
-                      </button>
-                    </form>
-                    <form method="post" action="{{ url_for('report_delete', report_id=report.pothole_report_id) }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                      <button type="submit" onclick="return confirm('Apakah anda yakin?.')"
-                        class="btn btn-sm btn-danger" title="Hapus">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form>
+                    </a>
                   </div>
+                  <a href="https://www.google.com/maps?q={{report.latitude}},{{report.longtitude}}" target="_blank">
+                    <button class="btn btn-sm btn-primary" title="Google Maps">
+                      <i class="fas fa-map-marked-alt"></i>
+                    </button>
+                  </a>
                 </td>
               </tr>
               {% endfor %}

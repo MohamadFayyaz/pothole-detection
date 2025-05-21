@@ -5,6 +5,7 @@ from app.model.UserModel import UserModel
 from app.model.AdministratorModel import AdministratorModel
 from config import Config
 import os
+import json
 
 def report():
     status_filter = request.args.get('status')
@@ -16,7 +17,7 @@ def report():
             PotholeReportModel.status,
             PotholeReportModel.longtitude,
             PotholeReportModel.latitude,
-            PotholeReportModel.kecamatan,
+            PotholeReportModel.address,
             PotholeReportModel.datetime,
             UserModel.name.label("nama_user"),
             AdministratorModel.name.label("nama_admin")
@@ -33,7 +34,7 @@ def report():
             PotholeReportModel.status,
             PotholeReportModel.longtitude,
             PotholeReportModel.latitude,
-            PotholeReportModel.kecamatan,
+            PotholeReportModel.address,
             PotholeReportModel.datetime,
             UserModel.name.label("nama_user"),
             AdministratorModel.name.label("nama_admin")
@@ -42,6 +43,54 @@ def report():
         .order_by(PotholeReportModel.datetime.desc()) \
         .all()
     return render_template('admin/laporan.html',reports=reports)
+
+
+def report_edit_admin(report_id):
+    report = db.session.query(
+        PotholeReportModel.pothole_report_id,
+        PotholeReportModel.image,
+        PotholeReportModel.address,
+        PotholeReportModel.status,
+        PotholeReportModel.longtitude,
+        PotholeReportModel.latitude,
+        PotholeReportModel.kecamatan,
+        PotholeReportModel.datetime,
+        PotholeReportModel.pesan,
+        UserModel.name.label("nama_user"),
+        UserModel.no_wa,
+        PotholeReportModel.number_potholes,
+        UserModel.username,
+        AdministratorModel.name.label("nama_admin")
+    ).join(UserModel, PotholeReportModel.user_id == UserModel.user_id) \
+    .outerjoin(AdministratorModel, PotholeReportModel.administrator_id == AdministratorModel.administrator_id) \
+    .order_by(PotholeReportModel.datetime.desc()) \
+    .filter(PotholeReportModel.pothole_report_id == report_id) \
+    .first()
+    if not report:
+        flash("Data tidak ditemukan!", "danger")
+        return redirect(url_for('report_admin'))
+    report_data = {
+        'pothole_report_id': report.pothole_report_id,
+        'latitude': float(report.latitude),
+        'longtitude': float(report.longtitude),
+    }
+    report_json = json.dumps(report_data)
+    return render_template('admin/laporan_edit.html',report=report,report_json=report_json)
+
+
+def report_edit_proses():
+    report_id = request.form['report_id']
+    pesan = request.form['pesan']
+    new_status = request.form['status']
+    report = PotholeReportModel.query.filter_by(pothole_report_id=report_id).first()
+    if not report:
+        flash("Data tidak ditemukan!", "danger")
+        return redirect(url_for('report_admin'))
+    report.status = new_status
+    report.pesan = pesan
+    report.administrator_id = session['admin']['id']
+    db.session.commit()
+    return redirect(url_for('report_admin'))
 
 def update_report_status(report_id):
     new_status = request.form.get('status')

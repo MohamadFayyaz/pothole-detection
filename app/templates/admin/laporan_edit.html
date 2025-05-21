@@ -1,0 +1,306 @@
+{% extends "admin/template_admin.html.j2" %}
+
+{% block title_section %}
+Data Laporan
+{% endblock %}
+
+
+{% block head_section %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- CSS Leaflet.markercluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<style>
+  #map {
+    height: 400px;
+    width: 100%;
+  }
+
+  #map-loader {
+    font-size: 14px;
+    color: #555;
+  }
+
+  canvas {
+    height: 100% !important;
+    width: 100% !important;
+  }
+</style>
+{% endblock %}
+
+
+{% block header_section %}
+<h2 class="text-white pb-2 fw-bold">Laporan</h2>
+<h5 class="text-white op-7 mb-2">Halaman Laporan</h5>
+{% endblock %}
+
+{% block container_section %}
+<div class="row mt--2">
+  <div class="col-md-12">
+    <div class="card full-height">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-title">
+          Detail Laporan
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div class="row">
+          <!-- Kolom Kiri - Foto dan Informasi Utama -->
+          <div class="col-lg-8">
+            <!-- Foto Laporan -->
+            <div class="photo-container text-center">
+              <img src="{{ url_for('static', filename='img/report_pictures/' + report.image) }}" alt="Foto Laporan"
+                class="img-thumbnail">
+            </div>
+
+            <!-- Peta Lokasi -->
+            <div class="card detail-card">
+              <div class="card-header">
+                <i class="fas fa-map-marker-alt mr-2"></i>Lokasi
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <strong>Latitude:</strong> {{report.latitude}}
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Longtitude:</strong> {{report.longtitude}}
+                  </div>
+                </div>
+                <div id="map-loader" style="text-align: center; margin-top: 10px;">
+                  <img src="{{ url_for('static', filename='img/loader.gif') }}" alt="Loading..." style="width: 50px;">
+                </div>
+                <div id="map"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kolom Kanan - Detail Informasi -->
+          <div class="col-lg-4">
+            <!-- Status Laporan -->
+            <div class="card detail-card">
+              <div class="card-header">
+                <i class="fas fa-info-circle mr-2"></i>Informasi Laporan
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <strong>Status:</strong>
+                  <br>
+                  {% if report.status == 'proses' %}
+                  <span class="btn btn-sm btn-success">
+                    {{ report.status.capitalize() }}
+                  </span>
+                  {% elif report.status == 'ditolak' %}
+                  <span class="btn btn-sm btn-danger">
+                    {{ report.status.capitalize() }}
+                  </span>
+                  {% else %}
+                  <span class="btn btn-sm btn-primary">
+                    {{ report.status.capitalize() }}
+                  </span>
+                  {% endif %}
+                </div>
+                <div class="mb-3">
+                  <strong>Diubah Oleh Admin:</strong>
+                  <div class="text-muted">{{ report.nama_admin if report.nama_admin else '-' }}</div>
+                </div>
+                <div class="mb-3">
+                  <strong>Tanggal Laporan:</strong>
+                  <div>{{ report.datetime.strftime('%d %B %Y, %H:%M') }}</div>
+                </div>
+                <div class="mb-3">
+                  <strong>Kecamatan:</strong>
+                  <div>{{ report.kecamatan }}</div>
+                </div>
+                <div class="mb-3">
+                  <strong>Alamat:</strong>
+                  <div>{{ report.address }}</div>
+                </div>
+                <div class="mb-3">
+                  <strong>Jumlah Lubang:</strong>
+                  <div>{{ report.number_potholes }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Informasi Pengguna -->
+            <div class="card detail-card">
+              <div class="card-header">
+                <i class="fas fa-user mr-2"></i>Informasi Pengguna
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <strong>Nama:</strong>
+                  <div>{{ report.nama_user }}</div>
+                </div>
+                <div class="mb-3">
+                  <strong>Username:</strong>
+                  <div class="text-muted">{{ report.username }}</div>
+                </div>
+                <div class="mb-3">
+                  <strong>No WA:</strong>
+                  <div class="text-muted">{{ report.no_wa if report.no_wa else '-' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Catatan Admin -->
+            <div class="card detail-card">
+              <div class="card-header">
+                <i class="fas fa-edit mr-2"></i>Catatan Admin
+              </div>
+              <div class="card-body">
+                <form method="post" action="{{ url_for('report_edit_proses', report_id=report.pothole_report_id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="report_id" value="{{ report.pothole_report_id }}" />
+                  <div class="form-group">
+                    <label for="status">Status</label>
+                    <select class="form-control" name="status" id="status" required>
+                      <option value="selesai" {% if report.status=='selesai' %}selected{% endif %}>Selesai</option>
+                      <option value="proses" {% if report.status=='proses' %}selected{% endif %}>Proses</option>
+                      <option value="ditolak" {% if report.status=='ditolak' %}selected{% endif %}>Tolak</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="pesan">Pesan</label>
+                    <textarea class="form-control mb-2" name="pesan" id="pesan" rows="4"
+                      placeholder="Tambahkan pesan untuk laporan ini..." required>{{ report.pesan or '' }}</textarea>
+                    <button class="btn btn-sm btn-primary">Simpan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="report-header d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('report_admin')}}" class="btn btn-danger">
+            <i class="fas fa-arrow-left mr-2"></i>Kembali
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block script_section %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+
+<script>
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+    }, function (error) {
+      alert("Geolocation permission denied or blocked. Please enable geolocation.");
+    });
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+</script>
+
+<script type="module">
+  import { CustomMap } from "{{ url_for('static', filename='js/map.js') }}";
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const loader = document.getElementById('map-loader');
+  const mapContainer = document.getElementById('map');
+
+  // Ambil Data dari flask
+  let report = JSON.parse('{{ report_json|safe }}');
+
+  // Buat grup cluster
+  let markers = L.markerClusterGroup();
+
+  let marker;
+  let map;
+  let geojsonLayer;
+
+  // Tampilkan loader, sembunyikan peta
+  try {
+    loader.style.display = 'block';
+    mapContainer.style.visibility = 'hidden';
+    map = await CustomMap.build('#map', { locate: true, zoom: 19, scrollWheelZoom: true, });
+
+    try {
+      const response = await fetch('/admin/geojson', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      if (!response.ok) throw new Error("Unauthorized");
+
+      const data = await response.json();
+
+      // Tambahkan layer kecamatan
+      let kecamatanLayer = L.geoJSON(data.kecamatan, {
+        onEachFeature: function (feature, layer) {
+          const namaKecamatan = feature.properties.WADMKC || "Nama Kecamatan Tidak Tersedia";
+          layer.bindPopup(`<b>${namaKecamatan}</b>`);
+        },
+        style: {
+          color: 'blue',
+          fillColor: 'skyblue',
+          fillOpacity: 0.2
+        }
+      }).addTo(map.leafletMap);
+
+      // Tambahkan layer jalan
+      let jalanLayer = L.geoJSON(data.jalan, {
+        onEachFeature: function (feature, layer) {
+          const namaJalan = feature.properties.name || "Jalan Tanpa Nama";
+          layer.bindPopup(`<b>${namaJalan}</b>`);
+        },
+        style: {
+          color: '#44ff00', // lebih terang dari sebelumnya
+          weight: 3
+        }
+      }).addTo(map.leafletMap);
+
+      // Fit bounds
+      const combinedBounds = L.featureGroup([kecamatanLayer, jalanLayer]).getBounds();
+      map.leafletMap.fitBounds(combinedBounds);
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memuat GeoJSON: " + err.message);
+    } finally {
+      loader.style.display = 'none';
+      mapContainer.style.visibility = 'visible';
+    }
+
+    console.log(report);
+
+    // Menampilkan marker untuk setiap laporan
+    let marker = L.marker([report.latitude, report.longtitude]);
+
+    // Menambahkan marker ke map
+    markers.addLayer(marker);
+
+    // Tambahkan ke peta
+    map.leafletMap.addLayer(markers);
+
+    console.log('mulai');
+  } catch (error) {
+    // Code to handle the error
+    console.error(error.message);
+    alert('error', error.message);
+  } finally {
+    console.log('selesai');
+    // Sembunyikan loader, tampilkan peta
+    loader.style.display = 'none';
+    mapContainer.style.visibility = 'visible';
+  }
+
+</script>
+<script>
+
+</script>
+{% endblock %}
