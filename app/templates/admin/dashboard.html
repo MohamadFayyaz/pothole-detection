@@ -233,7 +233,7 @@ Dashbord Admin
       // Mendeklarasikan csrfToken dan URL base
       const csrfToken = "{{ csrf_token() }}"; // Menyisipkan CSRF token dari Flask
     });
-    const updateUrlBase = "{{ url_for('update_report_dashboard_status', report_id=0).replace('0', '') }}"; // Base URL untuk update status
+    const updateUrlBase = "{{ url_for('report_edit_admin', report_id=0).replace('0', '') }}"; // Base URL untuk update status
     const deleteUrlBase = "{{ url_for('report_dashboard_delete', report_id=0).replace('0', '') }}"; // Base URL untuk delete
     const imageBaseUrl = "{{ url_for('static', filename='img/report_pictures/') }}"; // Base URL untuk gambar
 
@@ -254,23 +254,15 @@ Dashbord Admin
             alt="gambar laporan"
             style="width: 100px; cursor: pointer;"/>
         <div class="btn-group ml-3" role="group">
-          <!-- Form untuk mengubah status laporan menjadi selesai -->
-          <form method="post" action="${updateUrl}">
-            <input type="hidden" name="csrf_token" value="${csrfToken}" />
-            <input type="hidden" name="status" value="selesai">
-            <button type="submit" class="btn btn-sm btn-success" title="Selesaikan">
-              <i class="fas fa-check"></i>
-            </button>
-          </form>
-
-          <!-- Form untuk mengubah status laporan menjadi ditolak -->
-          <form method="post" action="${updateUrl}">
-            <input type="hidden" name="csrf_token" value="${csrfToken}" />
-            <input type="hidden" name="status" value="ditolak">
-            <button type="submit" class="btn btn-sm btn-warning" title="Tolak">
-              <i class="fas fa-times"></i>
-            </button>
-          </form>
+          
+          <!-- Form untuk mengubah status laporan -->
+          <div class="btn-group" role="group">
+            <a href="${updateUrl}">
+              <button class="btn btn-sm btn-success" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+            </a>
+          </div>
 
           <!-- Form untuk menghapus laporan -->
           <form method="post" action="${deleteUrl}">
