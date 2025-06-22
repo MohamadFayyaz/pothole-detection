@@ -4,8 +4,28 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 from ultralytics import YOLO
+from flask import request
+import logging
+from logging.handlers import RotatingFileHandler
+import os
+from flask import request
+
+# Pastikan direktori log ada
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+log_path = os.path.join('logs', 'flask_app.log')
+
+# Setup logging
+handler = RotatingFileHandler(log_path, maxBytes=1000000, backupCount=3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
+
 
 app = Flask(__name__)
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 csrf = CSRFProtect(app)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
@@ -22,8 +42,24 @@ def load_model():
         first_request = False
 
 
-from app.model import SurveyorModel,AdministratorModel,PotholeReportModel,PotholeSegmentModel,UserModel
+from app.model import AdministratorModel,PotholeReportModel,UserModel
 from app.routes import routes, adminRoute
+
+# Log
+@app.before_request
+def log_request_info():
+    app.logger.info(f"REQUEST: {request.method} {request.url} | IP: {request.remote_addr}")
+
+@app.after_request
+def log_response_info(response):
+    app.logger.info(f"RESPONSE: {request.method} {request.url} -> {response.status}")
+    return response
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"ERROR: {request.method} {request.url} | {str(e)}", exc_info=True)
+    return "Internal Server Error", 500
+
 # Menjalankan aplikasi Flask
 if __name__ == "__main__":
     try:

@@ -5,3 +5,7 @@ app/__pycache__
 app/controller/__pycache__
 app/models/__pycache__
 .env
+migrations
+logs
+requirements_after_pipreqs.txt
+requirements_full_pip.txt
