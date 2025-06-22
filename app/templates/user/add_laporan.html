@@ -137,9 +137,7 @@ Tambah Laporan
   //btnSubmit.style.display = 'none';
 
   let geoGranted = false;
-  let cameraGranted = false;
   let found = false;
-
 
   async function requestPermissions() {
     try {
@@ -154,12 +152,8 @@ Tambah Laporan
         });
       });
 
-      const cameraPromise = navigator.mediaDevices.getUserMedia({ video: true });
-
-      const [position, stream] = await Promise.all([geoPromise, cameraPromise]);
-      console.log(stream);
+      const [position] = await Promise.all([geoPromise]);
       geoGranted = true;
-      cameraGranted = true;
 
       const userLatLng = {
         lat: position.coords.latitude,
@@ -284,7 +278,7 @@ Tambah Laporan
 
 
   function updateButtonVisibility() {
-    if (geoGranted && cameraGranted && found) {
+    if (geoGranted && found) {
       if ('geolocation' in navigator) {
         btnSubmit.style.display = 'inline-block';
         // Ambil ulang lokasi saat kedua izin aktif
@@ -293,7 +287,6 @@ Tambah Laporan
           longitudeInput.value = position.coords.longitude;
 
           const userLatLng = { lat: position.coords.latitude, lng: position.coords.longitude };
-          //const kabupaten = await checkKabupatenFromGeoJSON(userLatLng); // fungsi kamu sendiri
 
           const address = await getAddressFromCoordinates(position.coords.latitude, position.coords.longitude);
           addressInput.value = address;
@@ -326,27 +319,8 @@ Tambah Laporan
     }
   }
 
-  async function checkCameraPermission() {
-    try {
-      const camStatus = await navigator.permissions.query({ name: 'camera' });
-
-      cameraGranted = camStatus.state === 'granted';
-      updateButtonVisibility();
-      camStatus.onchange = () => {
-        cameraGranted = camStatus.state === 'granted';
-        updateButtonVisibility();
-      };
-    } catch (e) {
-      console.warn("Gagal cek izin kamera:", e);
-      cameraGranted = false;
-      updateButtonVisibility();
-    }
-  }
-
   // Jalankan cek izin saat halaman dimuat
   checkGeolocationPermission();
-  checkCameraPermission();
-
 
 </script>
 <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
