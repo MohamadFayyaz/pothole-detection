@@ -4,15 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Masuk - Solusi Jalanan Lebih Aman</title>
-  <link rel="apple-touch-icon" sizes="180x180"
-    href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32"
-    href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16"
-    href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
   <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicons/favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
     :root {
       --primary: #71a894;
@@ -21,7 +18,6 @@
       --light: #F5F5F5;
       --text-on-primary: #ffffff;
     }
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -29,45 +25,12 @@
       background-color: var(--light);
       color: var(--secondary);
     }
-
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
       margin-top: 5%;
     }
-
-    header {
-      background-color: white;
-      padding: 20px 0;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: var(--primary);
-    }
-
-    .hero {
-      background: linear-gradient(135deg, var(--primary), #5d8f7d);
-      color: var(--text-on-primary);
-      padding: 60px 20px;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .hero h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-    }
-
-    .hero p {
-      font-size: 16px;
-      max-width: 700px;
-      margin: 0 auto 30px;
-    }
-
     .form-container {
       background-color: white;
       border-radius: 8px;
@@ -76,56 +39,42 @@
       max-width: 500px;
       margin: 0 auto;
     }
-
     .form-title {
       font-size: 24px;
       color: var(--primary);
       margin-bottom: 30px;
       text-align: center;
     }
-
     .form-group {
       margin-bottom: 20px;
       position: relative;
     }
-
     .form-group label {
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
       color: var(--secondary);
     }
-
     .form-group input {
       width: 100%;
-      padding: 12px 15px;
+      padding: 12px 40px 12px 15px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 16px;
-      transition: all 0.3s;
     }
-
     .form-group input:focus {
       border-color: var(--primary);
       outline: none;
       box-shadow: 0 0 0 2px rgba(113, 168, 148, 0.2);
     }
-
-    .form-group .error-message {
-      color: #e74c3c;
-      font-size: 14px;
-      margin-top: 5px;
-      display: none;
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 40px;
+      cursor: pointer;
+      color: var(--secondary);
+      font-size: 18px;
     }
-
-    .form-group.error input {
-      border-color: #e74c3c;
-    }
-
-    .form-group.error .error-message {
-      display: block;
-    }
-
     .btn {
       background-color: var(--primary);
       color: var(--text-on-primary);
@@ -138,93 +87,30 @@
       font-weight: 600;
       transition: all 0.3s;
     }
-
     .btn:hover {
       background-color: #5d8f7d;
       transform: translateY(-2px);
     }
-
     .btn:active {
       transform: translateY(0);
     }
-
     .register-link {
       text-align: center;
       margin-top: 20px;
       color: var(--secondary);
     }
-
     .register-link a {
       color: var(--primary);
       text-decoration: none;
       font-weight: 500;
     }
-
     .register-link a:hover {
       text-decoration: underline;
     }
-
-    .forgot-password {
-      text-align: right;
-      margin-top: -15px;
-      margin-bottom: 20px;
-    }
-
-    .forgot-password a {
-      color: var(--secondary);
-      font-size: 14px;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-
-    .forgot-password a:hover {
-      color: var(--primary);
-      text-decoration: underline;
-    }
-
     footer {
       text-align: center;
       margin-top: 60px;
       padding: 20px;
-      color: var(--secondary);
-      font-size: 14px;
-    }
-
-    /* Loading animation */
-    .loading {
-      display: none;
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .loading-spinner {
-      border: 3px solid rgba(113, 168, 148, 0.2);
-      border-top: 3px solid var(--primary);
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 10px;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* Password toggle */
-    .password-toggle {
-      position: absolute;
-      right: 15px;
-      top: 40px;
-      cursor: pointer;
       color: var(--secondary);
       font-size: 14px;
     }
@@ -236,7 +122,7 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
-    <div class="alert alert-{{ category }} w-50 m-auto" role="alert">
+    <div class="alert alert-{{ category }} mx-auto" role="alert" style="width: 100%; max-width: 400px; text-align: center;">
       {{ message }}
     </div>
     {% endfor %}
@@ -253,13 +139,12 @@
         <div class="form-group">
           <label for="password">Password</label>
           <input type="password" name="password" id="password" required placeholder="Masukkan password Anda">
-          <span class="password-toggle" id="togglePassword">Lihat</span>
+          <i class="bi bi-eye-slash-fill password-toggle" id="togglePassword"></i>
         </div>
         <button type="submit" class="btn" id="loginBtn">Masuk</button>
       </form>
       <div class="register-link">
-        Belum punya akun? <a href="{{ url_for('register') }}">Daftar di sini</a>.
-        <br>
+        Belum punya akun? <a href="{{ url_for('register') }}">Daftar di sini</a>.<br>
         Kembali ke <a href="{{ url_for('home') }}">Home</a>
       </div>
     </div>
@@ -276,11 +161,11 @@
       const passwordInput = document.getElementById('password');
       const togglePassword = document.getElementById('togglePassword');
 
-      // Toggle password visibility
       togglePassword.addEventListener('click', function () {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        this.textContent = type === 'password' ? 'Lihat' : 'Sembunyikan';
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        togglePassword.classList.toggle('bi-eye-fill', isPassword);
+        togglePassword.classList.toggle('bi-eye-slash-fill', !isPassword);
       });
     });
   </script>
