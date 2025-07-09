@@ -7,6 +7,7 @@ from ultralytics import YOLO
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
+from werkzeug.exceptions import HTTPException
 import os
 from flask import request
 
@@ -45,6 +46,21 @@ def load_model():
 from app.model import AdministratorModel,PotholeReportModel,UserModel
 from app.routes import routes, adminRoute
 
+#Error Handler 404
+@app.errorhandler(404)
+def page_not_found(e):
+    return {'message': 'Halaman tidak ditemukan'}, 404
+
+# @app.errorhandler(500)
+# def internal_server_error(e):
+#     return {'message': 'Terjadi kesalahan di server'}, 500
+
+@app.before_request
+def block_weird_path():
+    path = request.path
+    if path != "/" and "." not in path and not path.startswith("/api"):
+        return {"message": "Halaman tidak ditemukan"}, 404
+
 # Log
 @app.before_request
 def log_request_info():
@@ -57,8 +73,12 @@ def log_response_info(response):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    # biarkan Flask tangani sesuai status code
+    if isinstance(e, HTTPException):
+        return e  
+    
     app.logger.error(f"ERROR: {request.method} {request.url} | {str(e)}", exc_info=True)
-    return "Internal Server Error", 500
+    return {"message": "Terjadi kesalahan di server"}, 500
 
 # Menjalankan aplikasi Flask
 if __name__ == "__main__":
