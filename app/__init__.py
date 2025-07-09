@@ -9,6 +9,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from werkzeug.exceptions import HTTPException
 import os
+import re
 from flask import request
 
 # Pastikan direktori log ada
@@ -51,15 +52,10 @@ from app.routes import routes, adminRoute
 def page_not_found(e):
     return {'message': 'Halaman tidak ditemukan'}, 404
 
-# @app.errorhandler(500)
-# def internal_server_error(e):
-#     return {'message': 'Terjadi kesalahan di server'}, 500
+@app.errorhandler(500)
+def internal_server_error(e):
+    return {'message': 'Terjadi kesalahan di server'}, 500
 
-@app.before_request
-def block_weird_path():
-    path = request.path
-    if path != "/" and "." not in path and not path.startswith("/api"):
-        return {"message": "Halaman tidak ditemukan"}, 404
 
 # Log
 @app.before_request
