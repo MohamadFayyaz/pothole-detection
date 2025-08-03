@@ -1,4 +1,4 @@
-from app import app
+from app import app, oauth
 from app.middleware.middleware import guest_only,login_required,load_user,role_required
 from flask import session, redirect, url_for, send_file
 import os
@@ -57,6 +57,14 @@ def add_report_process():
 @guest_only
 def login():
     return UserAuthController.login()
+
+@app.route('/login/google')
+def google_login():
+    return UserAuthController.google_login()
+
+@app.route('/google/auth/')
+def google_auth():
+    return UserAuthController.google_login_process()
 
 @app.route('/login', methods=['POST'])
 @guest_only

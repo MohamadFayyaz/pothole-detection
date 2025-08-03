@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar Akun - Solusi Jalanan Lebih Aman</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180"
+    href="{{ url_for('static', filename='img/favicons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32"
+    href="{{ url_for('static', filename='img/favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16"
+    href="{{ url_for('static', filename='img/favicons/favicon-16x16.png') }}">
   <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicons/favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='atlantis-lite/css/bootstrap.min.css') }}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -18,6 +21,7 @@
       --light: #F5F5F5;
       --text-on-primary: #ffffff;
     }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -25,11 +29,13 @@
       background-color: var(--light);
       color: var(--secondary);
     }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
+
     .form-container {
       background-color: white;
       border-radius: 8px;
@@ -38,21 +44,25 @@
       max-width: 500px;
       margin: 5% auto;
     }
+
     .form-title {
       font-size: 24px;
       color: var(--primary);
       margin-bottom: 30px;
       text-align: center;
     }
+
     .form-group {
       margin-bottom: 20px;
       position: relative;
     }
+
     .form-group label {
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
     }
+
     .form-group input {
       width: 100%;
       padding: 12px 40px 12px 15px;
@@ -60,11 +70,13 @@
       border-radius: 4px;
       font-size: 16px;
     }
+
     .form-group input:focus {
       border-color: var(--primary);
       outline: none;
       box-shadow: 0 0 0 2px rgba(113, 168, 148, 0.2);
     }
+
     .toggle-password {
       position: absolute;
       top: 36px;
@@ -74,6 +86,7 @@
       color: var(--secondary);
       user-select: none;
     }
+
     .btn {
       background-color: var(--primary);
       color: var(--text-on-primary);
@@ -86,20 +99,25 @@
       font-weight: 600;
       transition: 0.3s;
     }
+
     .btn:hover {
       background-color: #5d8f7d;
     }
+
     .login-link {
       text-align: center;
       margin-top: 20px;
     }
+
     .login-link a {
       color: var(--primary);
       text-decoration: none;
     }
+
     .login-link a:hover {
       text-decoration: underline;
     }
+
     footer {
       text-align: center;
       margin-top: 60px;
@@ -113,7 +131,8 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
-    <div class="alert alert-{{ category }} mx-auto" role="alert" style="width: 100%; max-width: 400px; text-align: center;">
+    <div class="alert alert-{{ category }} mx-auto" role="alert"
+      style="width: 100%; max-width: 400px; text-align: center;">
       {{ message }}
     </div>
     {% endfor %}
@@ -138,10 +157,17 @@
         </div>
         <div class="form-group">
           <label for="confirm-password">Konfirmasi Password</label>
-          <input name="password_confirmation" type="password" id="confirm-password" placeholder="Ulangi password Anda" required>
+          <input name="password_confirmation" type="password" id="confirm-password" placeholder="Ulangi password Anda"
+            required>
           <i class="bi bi-eye-slash-fill toggle-password" onclick="togglePassword(this, 'confirm-password')"></i>
         </div>
         <button type="submit" class="btn" id="registerBtn">Daftar Sekarang</button>
+        <!-- Tambahan tombol login Google -->
+        <div class="form-group text-center mt-3">
+          <a href="{{ url_for('google_login') }}" class="btn" style="background-color: #db4437; color: white;">
+            <i class="bi bi-google me-2"></i> Masuk dengan Google
+          </a>
+        </div>
       </form>
       <div class="login-link">
         Sudah punya akun? <a href="{{ url_for('login') }}">Masuk di sini</a><br>

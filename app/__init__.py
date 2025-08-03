@@ -8,6 +8,7 @@ from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
 from werkzeug.exceptions import HTTPException
+from authlib.integrations.flask_client import OAuth
 import os
 import re
 from flask import request
@@ -32,6 +33,22 @@ csrf = CSRFProtect(app)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+oauth = OAuth(app)
+
+GOOGLE_CLIENT_ID = Config.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = Config.GOOGLE_CLIENT_SECRET
+
+
+CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+oauth.register(
+    name='google',
+    client_id=GOOGLE_CLIENT_ID,
+    client_secret=GOOGLE_CLIENT_SECRET,
+    server_metadata_url=CONF_URL,
+    client_kwargs={
+        'scope': 'openid email profile'
+    }
+)
 
 first_request = True
 

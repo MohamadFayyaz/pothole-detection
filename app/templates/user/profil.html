@@ -33,8 +33,28 @@ Halaman Edit Profil
                     <div class="form-group">
                         <label for="username"> Username </label>
                         <input type="text" class="form-control " name="username" id="username"
-                            placeholder="Masukan Username . . . " value="{{ session['user']['username'] }}"
+                            placeholder="Masukan Username . . . "
+                            value="{{ session['user']['username'] if session['user'].get('username') else '' }}"
                             autocomplete="off"></input>
+                    </div>
+                    <div class="form-group">
+                        <label for="email"> Email </label>
+                        <input type="email" class="form-control" name="email" id="email"
+                            value="{{ session['user']['email'] if session['user'].get('email') else '' }}"
+                            placeholder="Belum terhubung Google" autocomplete="off" readonly></input>
+                        {% if not session['user'].get('email') %}
+                        <small>
+                            <a href="{{ url_for('google_login') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                🔗 Hubungkan dengan akun Google
+                            </a>
+                        </small>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="address"> Alamat </label>
+                        <textarea name="address" id="address" class="form-control" name="address"
+                            placeholder="Masukan Alamat . . . ">{{ session['user']['address'] if
+                            session['user'].get('address')else '' }}</textarea>
                     </div>
                 </div>
                 <div class="card-footer">
