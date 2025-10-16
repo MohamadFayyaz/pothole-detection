@@ -1,7 +1,7 @@
 {% extends "admin/template_admin.html.j2" %}
 
 {% block title_section %}
-Dashbord Admin
+Preview Laporan Pertahun
 {% endblock %}
 
 {% block head_section %}
@@ -36,8 +36,8 @@ Dashbord Admin
 {% endblock %}
 
 {% block header_section %}
-<h2 class="text-white pb-2 fw-bold">Dashboard</h2>
-<h5 class="text-white op-7 mb-2">Halaman Dashboard</h5>
+<h2 class="text-white pb-2 fw-bold">Preview Laporan Pertahun</h2>
+<h5 class="text-white op-7 mb-2">Halaman Preview</h5>
 {% endblock %}
 
 {% block container_section %}
@@ -53,7 +53,7 @@ Dashbord Admin
           </div>
           <div class="col-7 col-stats">
             <div class="numbers">
-              <p class="card-category">Laporan Selesai Bulan Ini</p>
+              <p class="card-category">Laporan Selesai </p>
               <h4 class="card-title">{{ report_status['selesai'] }}</h4>
             </div>
           </div>
@@ -72,7 +72,7 @@ Dashbord Admin
           </div>
           <div class="col-7 col-stats">
             <div class="numbers">
-              <p class="card-category">Laporan Diterima Bulan Ini</p>
+              <p class="card-category">Laporan Diterima </p>
               <h4 class="card-title">{{ report_status['proses'] }}</h4>
             </div>
           </div>
@@ -91,7 +91,7 @@ Dashbord Admin
           </div>
           <div class="col-7 col-stats">
             <div class="numbers">
-              <p class="card-category">Laporan Ditolak Bulan Ini</p>
+              <p class="card-category">Laporan Ditolak </p>
               <h4 class="card-title">{{ report_status['ditolak'] }}</h4>
             </div>
           </div>

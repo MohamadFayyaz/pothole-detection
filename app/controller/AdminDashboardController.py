@@ -1,6 +1,7 @@
 from app import app, db
 from flask import request, render_template, redirect, url_for, session, flash, jsonify
 from app.model.PotholeReportModel import PotholeReportModel
+from app.model.UserModel import UserModel
 from collections import Counter
 from datetime import datetime
 from sqlalchemy import extract, func, or_
@@ -29,6 +30,18 @@ def dashboard():
     ]
     reports_json = json.dumps(reports_data)
 
+    # ambil 5 data
+    reports_table = db.session.query(
+        PotholeReportModel.pothole_report_id,
+        PotholeReportModel.address,
+        PotholeReportModel.status,
+        PotholeReportModel.datetime,
+        PotholeReportModel.address,
+        PotholeReportModel.image,
+        UserModel.name.label("nama_user")
+    ).join(UserModel, PotholeReportModel.user_id == UserModel.user_id) \
+    .filter(PotholeReportModel.status == 'proses').order_by(PotholeReportModel.user_id.desc()).limit(5).all()
+    print(reports_table)
     # ambil awal bulan dan akhir bulan sekarang
     now = datetime.now()
     start_of_month = datetime(now.year, now.month, 1)
@@ -49,7 +62,7 @@ def dashboard():
     result.update({status: count for status, count in status_counts})
 
     
-    return render_template('admin/dashboard.html',reports_json=reports_json,report_status=result)
+    return render_template('admin/dashboard.html',reports_json=reports_json,report_status=result,reports_table=reports_table)
 
 def chart():
     data = PotholeReportModel.query.with_entities(PotholeReportModel.kecamatan).filter(

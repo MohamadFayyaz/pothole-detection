@@ -1,6 +1,6 @@
 from app import app
 from app.middleware.middleware import admin_guest_only,admin_login_required,load_user,admin_role_required
-from flask import session, redirect, url_for, jsonify, send_file,current_app
+from flask import session, redirect, url_for, jsonify, request,current_app
 import os
 from app.controller import AdminAccountController, AdminAuthController,AdminDashboardController,AdminReportController,AdminUserAccountController, AdminRecapController
 import json
@@ -249,6 +249,27 @@ def reset_admin_password_process():
 @admin_role_required('admin')
 def recap():
     return AdminRecapController.recap()
+
+@app.route('/admin/recap/preview', methods=['POST'])
+@admin_login_required
+@admin_role_required('admin')
+def preview():
+    return AdminRecapController.preview()
+
+@app.route('/admin/monthly-reports', methods=['POST'])
+def monthly_reports():
+    data = request.get_json()
+    year = int(data.get("year"))
+    month = int(data.get("month"))
+    daily_reports = AdminRecapController.get_monthly_reports(year, month)
+    return jsonify(daily_reports)
+
+@app.route('/admin/monthly-chart', methods=['POST'])
+@admin_login_required
+@admin_role_required('admin')
+def monthly_chart():
+    return AdminRecapController.monthly_chart()
+
 
 @app.route('/admin/recap/process', methods=['post'])
 @admin_login_required

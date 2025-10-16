@@ -1,7 +1,7 @@
 {% extends "admin/template_admin.html.j2" %}
 
 {% block title_section %}
-Dashbord Admin
+Preview Laporan Perbulan
 {% endblock %}
 
 {% block head_section %}
@@ -36,8 +36,8 @@ Dashbord Admin
 {% endblock %}
 
 {% block header_section %}
-<h2 class="text-white pb-2 fw-bold">Dashboard</h2>
-<h5 class="text-white op-7 mb-2">Halaman Dashboard</h5>
+<h2 class="text-white pb-2 fw-bold">Rekap Laporan Perbulan</h2>
+<h5 class="text-white op-7 mb-2">Halaman Preview</h5>
 {% endblock %}
 
 {% block container_section %}
@@ -53,7 +53,7 @@ Dashbord Admin
           </div>
           <div class="col-7 col-stats">
             <div class="numbers">
-              <p class="card-category">Laporan Selesai Bulan Ini</p>
+              <p class="card-category">Laporan Selesai </p>
               <h4 class="card-title">{{ report_status['selesai'] }}</h4>
             </div>
           </div>
@@ -72,7 +72,7 @@ Dashbord Admin
           </div>
           <div class="col-7 col-stats">
             <div class="numbers">
-              <p class="card-category">Laporan Diterima Bulan Ini</p>
+              <p class="card-category">Laporan Diterima </p>
               <h4 class="card-title">{{ report_status['proses'] }}</h4>
             </div>
           </div>
@@ -91,7 +91,7 @@ Dashbord Admin
           </div>
           <div class="col-7 col-stats">
             <div class="numbers">
-              <p class="card-category">Laporan Ditolak Bulan Ini</p>
+              <p class="card-category">Laporan Ditolak </p>
               <h4 class="card-title">{{ report_status['ditolak'] }}</h4>
             </div>
           </div>
@@ -112,10 +112,10 @@ Dashbord Admin
         </div>
         <hr>
         <div class="line-container">
-          <div id="yearlyReportsChart-loader" style="text-align: center; margin-top: 10px;">
+          <div id="monthlyReportsChart-loader" style="text-align: center; margin-top: 10px;">
             <img src="{{ url_for('static', filename='img/loader.gif') }}" alt="Loading..." style="width: 50px;">
           </div>
-          <canvas id="yearlyReportsChart" style="display:none;"></canvas>
+          <canvas id="monthlyReportsChart" style="display:none;"></canvas>
         </div>
       </div>
     </div>
@@ -434,14 +434,19 @@ Dashbord Admin
   const chartKecamatanLoader = document.getElementById('chartKecamatan-loader');
   const chartKecamatanCanvas = document.getElementById('chartKecamatan');
 
-  const yearlyReportsLoader = document.getElementById('yearlyReportsChart-loader');
-  const yearlyReportsCanvas = document.getElementById('yearlyReportsChart');
+  const monthlyReportsLoader = document.getElementById('monthlyReportsChart-loader');
+  const monthlyReportsCanvas = document.getElementById('monthlyReportsChart');
 
-  fetch('/admin/chart', {
+  fetch('/admin/monthly-chart', {
     method: 'POST',
     headers: {
       'X-CSRFToken': csrfToken, // kirim token ke server
+      'Content-Type': 'application/json'
     },
+    body: JSON.stringify({
+      month: "{{ month }}",
+      year: "{{ year }}"
+    })
   })
     .then(res => res.json())
     .then(data => {
@@ -488,39 +493,46 @@ Dashbord Admin
 
 
 
-  // Chart untuk Perkembangan Laporan Tahunan
-  fetch('/admin/yearly-reports', {
+  // Chart untuk Perkembangan Laporan Harian dalam Bulan
+  fetch('/admin/monthly-reports', {
     method: 'POST',
     headers: {
       'X-CSRFToken': csrfToken,
+      'Content-Type': 'application/json'
     },
+    body: JSON.stringify({
+      month: "{{ month }}",
+      year: "{{ year }}"
+    })
   })
     .then(response => response.json())
-    .then(yearlyReportsData => {
-      yearlyReportsLoader.style.display = 'none'; // hide loader gif
-      yearlyReportsCanvas.style.display = 'block'; // show chart
+    .then(monthlyReportsData => {
+      console.log(monthlyReportsData);
+      monthlyReportsLoader.style.display = 'none'; // hide loader gif
+      monthlyReportsCanvas.style.display = 'block'; // show chart
 
-      const labelsYearly = Object.keys(yearlyReportsData).sort(); // Urutkan label bulan
-      const dataYearly = labelsYearly.map(month => yearlyReportsData[month]);
+      // Isi array tanggal 1 - 31
+      const labelsHarian = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+      const dataHarian = labelsHarian.map(tanggal => monthlyReportsData[tanggal] || 0);
 
-      var yearlyReportsChartCanvas = document.getElementById('yearlyReportsChart').getContext('2d');
-      var yearlyLineChart = new Chart(yearlyReportsChartCanvas, {
+      const ctx = document.getElementById('monthlyReportsChart').getContext('2d');
+      const monthlyChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labelsYearly.map(month => month.split('-')[1]), // Ambil hanya nama bulan
+          labels: labelsHarian,
           datasets: [{
-            label: "Laporan Tahun Ini",
-            borderColor: "#e20e0e", // Warna garis berbeda
+            label: "Jumlah Laporan per Hari",
+            borderColor: "#007bff",
             pointBorderColor: "#FFF",
-            pointBackgroundColor: "#e20e0e",
+            pointBackgroundColor: "#007bff",
             pointBorderWidth: 2,
             pointHoverRadius: 4,
             pointHoverBorderWidth: 1,
             pointRadius: 4,
             backgroundColor: 'transparent',
-            fill: false, // Jangan diisi warnanya
+            fill: false,
             borderWidth: 2,
-            data: dataYearly
+            data: dataHarian
           }]
         },
         options: {
@@ -530,7 +542,7 @@ Dashbord Admin
             position: 'bottom',
             labels: {
               padding: 10,
-              fontColor: '#e20e0e',
+              fontColor: '#007bff',
             }
           },
           tooltips: {
@@ -543,7 +555,7 @@ Dashbord Admin
             caretPadding: 10,
             callbacks: {
               title: function (tooltipItem) {
-                return 'Bulan: ' + tooltipItem[0].label;
+                return 'Tanggal: ' + tooltipItem[0].label;
               },
               label: function (tooltipItem) {
                 return 'Jumlah Laporan: ' + tooltipItem.raw;
@@ -564,13 +576,12 @@ Dashbord Admin
             x: {
               title: {
                 display: true,
-                text: 'Bulan'
+                text: 'Tanggal'
               }
             }
           }
         }
       });
     });
-
 </script>
 {% endblock %}

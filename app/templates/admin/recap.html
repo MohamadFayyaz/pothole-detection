@@ -21,6 +21,10 @@ Rekap Laporan
       <a class="nav-link" id="pertanggal-tab" data-toggle="tab" href="#pertanggal" role="tab" aria-controls="pertanggal"
         aria-selected="false">Pertanggal</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" id="pertahun-tab" data-toggle="tab" href="#pertahun" role="tab" aria-controls="pertahun"
+        aria-selected="false">Pertahun</a>
+    </li>
   </ul>
 
   <!-- Tab Contents -->
@@ -30,6 +34,7 @@ Rekap Laporan
       <form action="{{ url_for('recap_process') }}" method="post" target="_blank">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <input type="hidden" name="mode" value="perbulan" required>
+        <input type="hidden" name="action" id="action_perbulan" value="preview">
         <div class="form-group">
           <label for="bulan">Pilih Bulan</label>
           <select class="form-control" id="bulan" name="bulan">
@@ -55,7 +60,17 @@ Rekap Laporan
             {% endfor %}
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Cetak</button>
+        <button type="submit" class="btn btn-primary" onclick="setAction('perbulan', 'preview')">Cetak</button>
+        <button type="submit" class="btn btn-success" onclick="setAction('perbulan', 'download')">Unduh PDF</button>
+      </form>
+      <form action="{{ url_for('preview') }}" method="post" class="mt-2" target="_blank">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="mode" value="perbulan">
+        <div class="form-row">
+          <input type="hidden" name="bulan" id="preview_bulan">
+          <input type="hidden" name="tahun" id="preview_tahun">
+        </div>
+        <button type="submit" class="btn btn-info" onclick="copyPerbulanPreview()">Preview</button>
       </form>
     </div>
 
@@ -64,6 +79,7 @@ Rekap Laporan
       <form action="{{ url_for('recap_process') }}" method="post" target="_blank">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <input type="hidden" name="mode" value="pertanggal">
+        <input type="hidden" name="action" id="action_pertanggal" value="preview">
         <div class="form-group">
           <label for="tanggal_mulai">Tanggal Mulai</label>
           <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" required>
@@ -72,7 +88,39 @@ Rekap Laporan
           <label for="tanggal_akhir">Tanggal Akhir</label>
           <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" required>
         </div>
-        <button type="submit" class="btn btn-primary">Cetak</button>
+        <button type="submit" class="btn btn-primary" onclick="setAction('pertanggal', 'preview')">Cetak</button>
+        <button type="submit" class="btn btn-success" onclick="setAction('pertanggal', 'download')">Unduh PDF</button>
+      </form>
+      <form action="{{ url_for('preview') }}" method="post" class="mt-2" target="_blank">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="mode" value="pertanggal">
+        <input type="hidden" name="tanggal_mulai" id="preview_tanggal_mulai">
+        <input type="hidden" name="tanggal_akhir" id="preview_tanggal_akhir">
+        <button type="submit" class="btn btn-info" onclick="copyPertanggalPreview()">Preview</button>
+      </form>
+    </div>
+
+    <div class="tab-pane fade" id="pertahun" role="tabpanel" aria-labelledby="pertahun-tab">
+      <form action="{{ url_for('recap_process') }}" method="post" target="_blank">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="mode" value="pertahun">
+        <input type="hidden" name="action" id="action_pertahun" value="preview">
+        <div class="form-group">
+          <label for="tahun_pertahun">Pilih Tahun</label>
+          <select class="form-control" id="tahun_pertahun" name="tahun" required>
+            {% for y in years %}
+            <option value="{{ y.value }}">{{ y.value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" onclick="setAction('pertahun', 'preview')">Cetak</button>
+        <button type="submit" class="btn btn-success" onclick="setAction('pertahun', 'download')">Unduh PDF</button>
+      </form>
+      <form action="{{ url_for('preview') }}" method="post" class="mt-2" target="_blank">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="mode" value="pertahun">
+        <input type="hidden" name="tahun" id="preview_tahun_pertahun">
+        <button type="submit" class="btn btn-info" onclick="copyPertahunPreview()">Preview</button>
       </form>
     </div>
   </div>
@@ -80,4 +128,26 @@ Rekap Laporan
 {% endblock %}
 
 {% block script_section %}
+<script>
+  function setAction(tab, value) {
+    document.getElementById('action_' + tab).value = value;
+  }
+
+  function copyPerbulanPreview() {
+    const bulan = document.getElementById('bulan').value;
+    const tahun = document.getElementById('tahun').value;
+    document.getElementById('preview_bulan').value = bulan;
+    document.getElementById('preview_tahun').value = tahun;
+  }
+
+  function copyPertanggalPreview() {
+    document.getElementById('preview_tanggal_mulai').value = document.getElementById('tanggal_mulai').value;
+    document.getElementById('preview_tanggal_akhir').value = document.getElementById('tanggal_akhir').value;
+  }
+
+  function copyPertahunPreview() {
+    document.getElementById('preview_tahun_pertahun').value = document.getElementById('tahun_pertahun').value;
+  }
+
+</script>
 {% endblock %}

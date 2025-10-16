@@ -20,7 +20,7 @@ if not os.path.exists('logs'):
 log_path = os.path.join('logs', 'flask_app.log')
 
 # Setup logging
-handler = RotatingFileHandler(log_path, maxBytes=1000000, backupCount=3)
+handler = RotatingFileHandler(log_path, maxBytes=1000000, backupCount=3,delay=True)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
 handler.setFormatter(formatter)
